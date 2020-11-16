@@ -1,76 +1,37 @@
-cmake_minimum_required(VERSION 2.8.3)
-project(my_planner)
+# cmake_minimum_required(VERSION 2.8.3)
+# project(Evoluationary_Programmer)
 
-set(CMAKE_CXX_STANDARD 11)
+# ## Find catkin macros and libraries
+# ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
+# ## is used, also find other catkin packages
+# set(PCL_DIR /usr/local/share/pcl-1.8)
 
-find_package(catkin REQUIRED
-  COMPONENTS
-    angles
-    costmap_2d
-    dynamic_reconfigure
-    geometry_msgs
-    nav_core
-    navfn
-    nav_msgs
-    pluginlib
-    roscpp
-    tf
-)
 
-generate_dynamic_reconfigure_options(
-  cfg/GlobalPlanner.cfg
-)
+# # find_package(Python2 COMPONENTS Development NumPy)
+# # target_include_directories(myproject PRIVATE ${Python2_INCLUDE_DIRS} ${Python2_NumPy_INCLUDE_DIRS})
+# # target_link_libraries(myproject Python2::Python Python2::NumPy)
 
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS
-    costmap_2d
-    dynamic_reconfigure
-    geometry_msgs
-    nav_core
-    navfn
-    nav_msgs
-    pluginlib
-    roscpp
-    tf
-)
+# find_package(
+#   # PythonLibs 2.7
+#   PCL 1.8 REQUIRED
+# )
 
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-)
+# find_package(PythonLibs 2.7)
+# include_directories(
+#   ${catkin_INCLUDE_DIRS}
+#   ${PCL_INCLUDE_DIRS}
+#   include
+#   "/home/ljb/pkg_slam_about/matplotlib-cpp/"
+#   "/usr/include/python2.7"
+# )
 
-add_library(${PROJECT_NAME}
-  src/quadratic_calculator.cpp
-  src/dijkstra.cpp
-  src/rrt.cpp
-  src/astar.cpp
-  src/grid_path.cpp
-  src/gradient_path.cpp
-  src/orientation_filter.cpp
-  src/planner_core.cpp
-)
-add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
+# link_directories(${PCL_LIBRARY_DIRS})
 
-add_executable(m_planner
-  src/plan_node.cpp
-)
-add_dependencies(m_planner ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(m_planner
-  ${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-)
+# add_definitions(${PCL_DEFINITIONS})
 
-install(TARGETS ${PROJECT_NAME} m_planner
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+# add_executable(genMap src/genMap.cpp)
 
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  PATTERN ".svn" EXCLUDE)
+# target_link_libraries(genMap ${PCL_LIBRARIES})
+# # target_include_directories(genMap PRIVATE ${PYTHON_INCLUDE_DIRS})
+# target_include_directories(genMap PRIVATE ${WORKING_DIRECTORY})
 
-install(FILES bgp_plugin.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
