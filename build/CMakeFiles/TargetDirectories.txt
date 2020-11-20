@@ -1,3 +1,0 @@
-/home/ljb/catkin_ws/src/Evoluationary_Programmer/build/CMakeFiles/rebuild_cache.dir
-/home/ljb/catkin_ws/src/Evoluationary_Programmer/build/CMakeFiles/genMap.dir
-/home/ljb/catkin_ws/src/Evoluationary_Programmer/build/CMakeFiles/edit_cache.dir

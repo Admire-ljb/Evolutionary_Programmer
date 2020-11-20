@@ -89,5 +89,5 @@ if __name__ == "__main__":
     ax.w_zaxis.set_major_locator(LinearLocator(10))
     ax.w_zaxis.set_major_formatter(FormatStrFormatter('%.0f'))
     fig.colorbar(surf, shrink=0.5, aspect=5)
-    # plt.switch_backend('TkAgg')
+    # plt.switch_backend('agg')
     plt.show()
