@@ -7,10 +7,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 import rospy
-
+from generatemap import terrain
 
 class individual:
-    def __init__(self, points, start, goal, obstacles):
+    def __init__(self, points, start, goal):
         """
         Create a member of the population
         nPoints: the number of values per individual
@@ -18,7 +18,7 @@ class individual:
         goal: goal point
         """
         self.points = points
-        self.trajectory = bezier_curve(points)
+        self.path = path
         self.fitness = fitness(self.trajectory, start, goal, obstacles)
 
 
@@ -325,29 +325,29 @@ def getCurve(map_size, obstacles, nPoints):
 
 
 if __name__ == '__main__':
-    mapsize = 16
-    # obs = np.array([[ 5.41022686,  8.61243773],
-    #    [10.48489417,  5.60397119],
-    #    [ 2.86068703,  5.14619389],
-    #    [ 3.22309725,  8.56178768],
-    #    [12.62500902, 13.14239391],
-    #    [13.95180637,  6.3945937 ],
-    #    [ 7.13261747,  2.86569717],
-    #    [ 3.94899431,  1.17146981],
-    #    [14.03970873,  9.43937267],
-    #    [ 2.76140657, 12.00313488],
-    #    [12.14357054,  9.62369838],
-    #    [ 2.21195517,  4.34068619],
-    #    [ 4.07020724,  6.75652512],
-    #    [10.15570869, 10.03985702],
-    #    [ 2.3573808 ,  1.6167306 ],
-    #    [ 7.12685735,  8.58548299],
-    #    [ 7.02469972,  2.59285701],
-    #    [ 9.48494011,  7.29211685],
-    #    [ 4.45415489, 10.46243259],
-    #    [ 2.54677276,  4.29169719]])
-    obs = np.random.rand(10, 2) * mapsize
-    n_points = 5
-    solution, fitness = getCurve(mapsize, obs, n_points)
-
+    # mapsize = 16
+    # # obs = np.array([[ 5.41022686,  8.61243773],
+    # #    [10.48489417,  5.60397119],
+    # #    [ 2.86068703,  5.14619389],
+    # #    [ 3.22309725,  8.56178768],
+    # #    [12.62500902, 13.14239391],
+    # #    [13.95180637,  6.3945937 ],
+    # #    [ 7.13261747,  2.86569717],
+    # #    [ 3.94899431,  1.17146981],
+    # #    [14.03970873,  9.43937267],
+    # #    [ 2.76140657, 12.00313488],
+    # #    [12.14357054,  9.62369838],
+    # #    [ 2.21195517,  4.34068619],
+    # #    [ 4.07020724,  6.75652512],
+    # #    [10.15570869, 10.03985702],
+    # #    [ 2.3573808 ,  1.6167306 ],
+    # #    [ 7.12685735,  8.58548299],
+    # #    [ 7.02469972,  2.59285701],
+    # #    [ 9.48494011,  7.29211685],
+    # #    [ 4.45415489, 10.46243259],
+    # #    [ 2.54677276,  4.29169719]])
+    # obs = np.random.rand(10, 2) * mapsize
+    # n_points = 5
+    # solution, fitness = getCurve(mapsize, obs, n_points)
+    terrain()
 

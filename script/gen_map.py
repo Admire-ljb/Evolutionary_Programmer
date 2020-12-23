@@ -45,7 +45,7 @@ if __name__ == "__main__":
     fig = plt.figure()
     # 3d fig
     ax = Axes3D(fig)
-
+    ax.axis("equal")
     # fig
     X = np.linspace(-25, 40, AMOUNT_OF_POINTS)
     Y = np.linspace(-40, 32, AMOUNT_OF_POINTS)
