@@ -1,13 +1,14 @@
 from math import sqrt
 import random
 from typing import Any, Union
-
+from calculate import *
 from scipy.special import comb
 import matplotlib.pyplot as plt
 import numpy as np
 import time
 import rospy
 from generatemap import terrain
+
 
 class individual:
     def __init__(self, points, start, goal):
@@ -82,35 +83,6 @@ def Population(population_individuals, nPoints, start, goal, map_size, obstacles
     graded = merge_sort(population_pre)
 
     return graded[0:len(graded)//2]
-
-
-def merge_sort(lists):
-    if len(lists) <= 1:
-        return lists
-    middle = len(lists)//2
-    left = merge_sort(lists[:middle])
-    right = merge_sort(lists[middle:])
-    return merge(left, right)
-
-
-def merge(left, right):
-    c = []
-    h = j = 0
-    while j < len(left) and h < len(right):
-        if left[j].fitness <= right[h].fitness:
-            c.append(left[j])
-            j += 1
-        else:
-            c.append(right[h])
-            h += 1
-    while j < len(left):
-        c.append(left[j])
-        j += 1
-    while h < len(right):
-        c.append(right[h])
-        h += 1
-    return c
-
 
 def fitness(trajectory, start, goal, obstacles):
     """

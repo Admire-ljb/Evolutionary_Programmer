@@ -1,115 +1,168 @@
 from math import sqrt
 import random
 from typing import Any, Union
-
-from scipy.special import comb
+from calculate import *
 import matplotlib.pyplot as plt
 import numpy as np
 import time
 import rospy
 
 
-class individual:
-    def __init__(self, start, goal, map):
+class Individual:
+    def __init__(self, pop):
         """
-        Create a member of the population
-        nPoints: the number of values per individual
+        Create an individual
+        pop: the population, recording some shared imformation
+        map: the global map consisting of terrain, radar, missile and no-fly zone
         start: start point
         goal: goal point
+        curve_type: the curve using to smooth the trajectory
+        num_cp: the number of control_points
+        coordinates: the rotate coordinates of ST
         """
-        self.control_points = points
-        self.trajectory = bezier_curve(points)
-        self.fitness = fitness(self.trajectory, start, goal, obstacles)
+        self.control_points = initialize(pop.global_map, pop.num_cp, pop.rotation_matrix,
+                                              pop.start, pop.goal_r)
+        self.trajectory = self.curve(pop.curve_type)
+        # self.fitness = fitness
+
+    def curve(self, cv):
+        """"""
+        if cv == '00':
+            trajectory = six_bezier(self.control_points)
+        elif cv == '01':
+            trajectory = b_spline(self.control_points)
+        elif cv == '10':
+            trajectory = rts(self.control_points)
+        else:
+            trajectory = tangent_circle_curve(self.control_points)
+        return trajectory
 
 
-def bezier_curve(points, nTimes=80):
-    """
-   Given a set of control points, return the
-   bezier curve defined by the control points.
-    """
-    nPoints = len(points)
-    # Creating random points for control points
-    xPoints = np.array([p[0] for p in points])
-    yPoints = np.array([p[1] for p in points])
-
-    t = np.linspace(0.0, 1.0, nTimes)
-
-    polynomial_array = np.array([bernstein_poly(i, nPoints - 1, t) for i in range(0, nPoints)])
-
-    xvals = np.dot(xPoints, polynomial_array)
-    yvals = np.dot(yPoints, polynomial_array)
-
-    xvals.astype(int)
-    yvals.astype(int)
-
-    # curve = (map(lambda x, y:(x, y), xvals, yvals))
-    path = [[xvals[i], yvals[i]] for i in range(0, len(xvals))]
-    path.reverse()
-    '''
-    plt.plot(xvals, yvals)
-    plt.plot(xPoints, yPoints, "ro")
-    for nr in range(len(xPoints)):
-        plt.text(points[nr][0], points[nr][1], nr)
-
-    plt.show()
-    '''
-
-    return path
-
-
-def bernstein_poly(i, n, t):
-    """
-     The Bernstein polynomial of n, i as a function of t
-    """
-    return comb(n, i) * (t ** (n - i)) * (1 - t) ** i
-
-
-def Population(population_individuals, nPoints, start, goal, map_size, obstacles):
+class Population:
     """
     Create a number of individuals (i.e. a population).
     """
-    population_pre = []
-    for i in range(population_individuals * 2):
+    def __init__(self, num_individual, start, goal, global_map, curve_type, cp):
+        self.data = list()
+        self.start = start
+        self.goal = goal
+        self.curve_type = curve_type
+        self.rotation_matrix = self.rotate_coordinate()
+        self.goal_r = rotation2st(start, goal, self.rotation_matrix)
+        self.cp = cp
+        self.global_map = global_map
+        self.num_cp = self.decode_cp()
+        self.upper_bound, self.lower_bound = self.y_boundary(global_map)
+        for i in range(num_individual):
+            self.data.append(Individual(self))
+
+    def y_boundary(self, global_map):
+        delta_d = 1
+        y_upper = []
+        y_lower = []
+        for each in global_map.radar:
+            o = rotation2st(self.start, each.center, self.rotation_matrix)
+            if -each.radius < o[0] < self.goal_r[0] + each.radius:
+                y_upper.append(o[1]+each.radius)
+                y_lower.append(o[1]-each.radius)
+
+        for each in global_map.missile:
+            o = rotation2st(self.start, each.center, self.rotation_matrix)
+            if -each.radius < o[0] < self.goal_r[0] + each.radius:
+                y_upper.append(o[1] + each.radius)
+                y_lower.append(o[1] - each.radius)
         points = []
-        points.append(start)
-        for j in range(1, nPoints-1):
-            points.append(np.random.rand(2) * mapsize)
-        points.append(goal)
-        population_pre.append(individual(points, start, goal, obstacles))
+        for each in global_map.nfz:
+            points.append(rotation2st(self.start, np.array([each.x_min, each.y_min, 0]), self.rotation_matrix))
+            points.append(rotation2st(self.start, np.array([each.x_min, each.y_max, 0]), self.rotation_matrix))
+            points.append(rotation2st(self.start, np.array([each.x_max, each.y_min, 0]), self.rotation_matrix))
+            points.append(rotation2st(self.start, np.array([each.x_max, each.y_max, 0]), self.rotation_matrix))
+        for i in points:
+            if 0 < i[0] < self.goal_r[0]:
+                y_upper.append(i[1])
+                y_lower.append(i[1])
+        return max(max(y_upper), 0) + delta_d, min(min(y_lower), 0) - delta_d
 
-    # print (population_pre)
+    def rotate_coordinate(self):
+        theta = np.arctan((self.goal[1] - self.start[1])/(self.goal[0]-self.start[0]))
+        if self.goal[0] < self.start[0]:
+            theta += np.pi
+        if self.goal[0] == self.start[0]:
+            theta += np.pi * bool(self.start[1] > self.goal[1])
+        rotation_matrix = np.array([[np.cos(theta),  np.sin(theta), 0],
+                                    [- np.sin(theta), np.cos(theta), 0],
+                                    [0,                0,            1]])
+        return rotation_matrix
 
-    graded = merge_sort(population_pre)
-
-    return graded[0:len(graded)//2]
-
-
-def merge_sort(lists):
-    if len(lists) <= 1:
-        return lists
-    middle = len(lists)//2
-    left = merge_sort(lists[:middle])
-    right = merge_sort(lists[middle:])
-    return merge(left, right)
-
-
-def merge(left, right):
-    c = []
-    h = j = 0
-    while j < len(left) and h < len(right):
-        if left[j].fitness <= right[h].fitness:
-            c.append(left[j])
-            j += 1
+    def decode_cp(self):
+        distance = np.linalg.norm(self.goal[0:2] - self.start[0:2])
+        if self.cp == '00':
+            len_points = distance // 10 + 2
+        elif self.cp == '01':
+            len_points = distance // 5 + 2
+        elif self.cp == '10':
+            len_points = distance // 2 + 2
         else:
-            c.append(right[h])
-            h += 1
-    while j < len(left):
-        c.append(left[j])
-        j += 1
-    while h < len(right):
-        c.append(right[h])
-        h += 1
-    return c
+            len_points = distance // 1 + 2
+        return len_points
+
+
+
+def six_bezier(control_points):
+    trajectory = []
+    for i in control_points:
+        trajectory = []
+        #TODO
+    return trajectory
+
+def b_spline(self):
+    trajectory = []
+    for i in self.control_points:
+        trajectory = []
+        #TODO
+    return trajectory
+
+def rts(self):
+    trajectory = []
+    for i in self.control_points:
+        trajectory = []
+        #TODO
+    return trajectory
+
+def tangent_circle_curve(self):
+    trajectory = []
+    for i in self.control_points:
+        trajectory = []
+        #TODO
+    return trajectory
+
+
+def initialize(global_map, num_cp, rotation_matrix, start, goal_r):
+    """
+    initialize the control_points
+    """
+    safe_height = 5
+    points = list()
+    start_r = [0, 0, start[2]]
+    points.append(start_r)
+    delta_l = goal_r[0] / num_cp
+    for i in range(1, num_cp-1):
+        temp = list()
+        temp.append(delta_l*(i+1))
+        if i == 1:
+            temp.append(random.random() * delta_l*2 - delta_l)
+        else:
+            temp.append(random.random() * delta_l*6 - delta_l*3 + points[i-1][1])
+        if i == 1:
+            temp.append(points[0][2] + safe_height)
+        else:
+            temp.append(np.random.normal(global_map.terrain.map(int(temp[0]), int(temp[1])) -
+                                         global_map.terrain.map(int(points[i-1][0]), int(points[i-1][1]))
+                                         + points[i-1][2], delta_l/3))
+        points.append(temp)
+    points.append(list(goal_r))
+    control_points = rotation2origin(start, np.array(points), rotation_matrix)
+    return control_points
 
 
 def fitness(trajectory, start, goal, obstacles):

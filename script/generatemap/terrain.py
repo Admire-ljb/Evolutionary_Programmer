@@ -73,6 +73,11 @@ def generate_map():
                 z = ((-z) ** (1 / zroot)) ** zpower
             points.append([x, y, z])
             point.append([x+75, y+50, z])
+    Z = [points[i][2] for i in range(15000)]
+    Z = np.array(Z)
+    Z_min = Z.min()
+    for i in range(15000):
+        point[i][2] -= Z_min
     return point, points
 
 
@@ -84,13 +89,11 @@ def plt_fig(points, fig, missile=[], radar=[], nfz=[]):
     Z =[points[i][2] for i in range(15000)]
 
     X = np.array(X)
-    X = X.reshape(150,100)
+    X = X.reshape(150, 100)
     Y = np.array(Y)
-    Y = Y.reshape(150,100)
+    Y = Y.reshape(150, 100)
     Z = np.array(Z)
-    Z = Z.reshape(150,100)
-
-
+    Z = Z.reshape(150, 100)
 
     # Create cubic bounding box to simulate equal aspect ratio
     max_range = np.array([X.max() - X.min(), Y.max() - Y.min(), Z.max() - Z.min()]).max()

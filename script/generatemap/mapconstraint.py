@@ -18,7 +18,7 @@ class NFZ:
         self.x_min = x_min
         self.x_max = x_max
         self.y_min = y_min
-        self.x_max = x_max
+        self.x_max = y_max
 
 
 def generate_missile_or_radar(terrain, dtype="missile"):
