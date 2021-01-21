@@ -107,13 +107,13 @@ class Population:
         return len_points
 
 
-
 def six_bezier(control_points):
     trajectory = []
     for i in control_points:
         trajectory = []
         #TODO
     return trajectory
+
 
 def b_spline(self):
     trajectory = []
@@ -122,12 +122,14 @@ def b_spline(self):
         #TODO
     return trajectory
 
+
 def rts(self):
     trajectory = []
     for i in self.control_points:
         trajectory = []
         #TODO
     return trajectory
+
 
 def tangent_circle_curve(self):
     trajectory = []
