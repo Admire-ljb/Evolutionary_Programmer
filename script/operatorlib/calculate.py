@@ -1,5 +1,11 @@
 import numpy as np
 from scipy.special import comb
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator, FixedLocator, FormatStrFormatter
+import matplotlib.pyplot as plt
+
 
 def euclidean_distance(d1, d2):
     """calculates the distance between two data points
@@ -7,19 +13,19 @@ def euclidean_distance(d1, d2):
     :param d2: points 2
     :return: distance between two points
     """
-    n = len(d1)
-    sum_ = 0
-    for i in range(n):
-        sum_ += (d1[i] - d2[i])**2
-    return sum_ ** 0.5
+    if d1.ndim == 1 and d2.ndim == 1:
+        result = np.linalg.norm(d2 - d1)
+    else:
+        result = np.linalg.norm(d2-d1, axis=1)
+    return result
 
 
 def rotation2st(start, point, rotation_matrix):
-    return np.dot((point - start), np.linalg.inv(rotation_matrix))
+    return np.dot((point - [start[0], start[1], 0]), np.linalg.inv(rotation_matrix))
 
 
 def rotation2origin(start, point, rotation_matrix):
-    return np.dot(point, rotation_matrix) + start
+    return np.dot(point, rotation_matrix) + [start[0], start[1], 0]
 
 
 def separation_coordinates(points):
@@ -55,7 +61,7 @@ def bezier_curve(points, nTimes=80):
 
     plt.show()
     '''
-
+    path = np.array(path)
     return path
 
 
@@ -76,6 +82,7 @@ def set_knots(param_list, degree=3):
     tn = [1.] * degree
     knots_list = t0 + param_list + tn
     return knots_list
+
 
 def evaluate(t, u, i, j):
     """evaluates the element of the N basis matrix
@@ -265,10 +272,11 @@ def solver(basis_mat, data_points):
     """
     control_points = []
     n = len(basis_mat[0])
-    d0 = [(0, 0)]
-    appended_data_points = d0 + data_points + d0
+    d0 = np.array([0, 0, 0]).reshape(1, 3)
+    appended_data_points = np.concatenate((d0, data_points, d0), axis=0)
     x = [each[0] for each in appended_data_points]
     y = [each[1] for each in appended_data_points]
+    z = [each[2] for each in appended_data_points]
 
     # swap the 1st and 2nd rows, the n - 1 and n rows
     basis_mat[0], basis_mat[1] = basis_mat[1], basis_mat[0]
@@ -293,6 +301,7 @@ def solver(basis_mat, data_points):
 
     return control_points
 
+
 def B(x, k, i, t):
     """recursive definition of B-Spline curve
     :param x:
@@ -312,6 +321,7 @@ def B(x, k, i, t):
     else:
         c2 = (t[i + k + 1] - x) / (t[i + k + 1] - t[i + 1]) * B(x, k - 1, i + 1, t)
     return c1 + c2
+
 
 def bspline(x, t, c, k):
     """evaluate B-Spline curve
@@ -382,3 +392,12 @@ def merge(left, right):
         c.append(right[h])
         h += 1
     return c
+
+
+def plt_fig(points, ax):
+    # 3d fig
+    l = len(points)
+    X =[points[i][0] for i in range(l)]
+    Y =[points[i][1] for i in range(l)]
+    Z =[points[i][2] for i in range(l)]
+    ax.plot(X, Y, Z)

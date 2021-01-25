@@ -81,9 +81,8 @@ def generate_map():
     return point, points
 
 
-def plt_fig(points, fig, missile=[], radar=[], nfz=[]):
+def plt_fig(points, ax, missile=[], radar=[], nfz=[]):
     # 3d fig
-    ax = Axes3D(fig)
     X =[points[i][0] for i in range(15000)]
     Y =[points[i][1] for i in range(15000)]
     Z =[points[i][2] for i in range(15000)]
@@ -127,7 +126,6 @@ def plt_fig(points, fig, missile=[], radar=[], nfz=[]):
         z = np.cos(v) + missile[i].center[2]
         ax.plot_wireframe(x, y, z, color="r")
     # ax.set_zlim(Z.min()-10, Z.max() + 10)
-    return ax
 
 
 def constraint_plt(missile, radar, nfz, fig):
@@ -147,6 +145,27 @@ def constraint_plt(missile, radar, nfz, fig):
         # # Comment or uncomment following both lines to test the fake bounding box:
         # for xb, yb, zb in zip(Xb, Yb, Zb):
         #     ax.plot([xb], [yb], [zb], 'w')
+
+
+def plt_terrain(start_point, target_point, g_map, ax_3d):
+    if start_point[0] < target_point[0]:
+        begin_x = int(start_point[0])
+        end_x = int(target_point[0])
+    else:
+        begin_x = int(target_point[0])
+        end_x = int(start_point[0])
+    if start_point[1] < target_point[1]:
+        begin_y = int(start_point[1])
+        end_y = int(target_point[1])
+    else:
+        begin_y = int(target_point[1])
+        end_y = int(start_point[1])
+    x = np.arange(begin_x - 10, end_x + 10, 1)
+    y = np.arange(begin_y - 10, end_y + 10, 1)
+    x, y = np.meshgrid(x, y)
+    z = g_map.terrain.map(x, y)
+    ax_3d.plot_surface(x, y, z, color='orange')
+
 
 if __name__ == "__main__":
     triangles = []
@@ -180,6 +199,6 @@ if __name__ == "__main__":
     world.screen.window.mainloop()
     # fig define!
     fig = plt.figure()
-    plt_fig(point, fig)
+    ax = Axes3D()
+    plt_fig(point, ax)
 
-    plt.show()

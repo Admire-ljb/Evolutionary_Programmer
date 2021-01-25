@@ -1,18 +1,11 @@
 from generatemap import terrain
 from generatemap import mapconstraint
-import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.ticker import LinearLocator, FixedLocator, FormatStrFormatter
-from itertools import product, combinations
-from matplotlib.patches import FancyArrowPatch
-from mpl_toolkits.mplot3d import proj3d
-import initialize
-
+import numpy as np
 
 class Terr:
     def __init__(self, points):
-        self.points = points
+        self.points = np.array(points)
         temp = points[0][0]
         count = 0
         for i in points:
@@ -25,7 +18,7 @@ class Terr:
 
     def map(self, x_index, y_index):
         index = x_index * self.length + y_index
-        return self.points[index][2]
+        return self.points[index, 2]
 
 
 class Map:

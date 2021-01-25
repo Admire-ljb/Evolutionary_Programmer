@@ -37,8 +37,7 @@ def evolve(g_map, start, goal, genome_64_bits):
         result.append(each_p.data[0])
         plt.plot(fit_evolve)
         # plt.plot(penalty_evolve)
-
-    return result[0]
+    return result[0], swarms
 
 
 def end_criterion(_end, _end_param):
@@ -66,28 +65,6 @@ def determine_terminate(end_condition, population):
     return bool_value
 
 
-def plt_terrain(start_point, target_point, g_map, ax_3d):
-    if start_point[0] < target_point[0]:
-        begin_x = int(start_point[0])
-        end_x = int(target_point[0])
-    else:
-        begin_x = int(target_point[0])
-        end_x = int(start_point[0])
-    if start_point[1] < target_point[1]:
-        begin_y = int(start_point[1])
-        end_y = int(target_point[1])
-    else:
-        begin_y = int(target_point[1])
-        end_y = int(start_point[1])
-    x = np.arange(begin_x - 10, end_x + 10, 1)
-    y = np.arange(begin_y - 10, end_y + 10, 1)
-    x, y = np.meshgrid(x, y)
-    x = x.reshape(1, -1)[0]
-    y = y.reshape(1, -1)[0]
-    z = np.array([g_map.terrain.map(x[cnt], y[cnt]) for cnt in range(len(x))])
-    ax_3d.scatter3D(x, y, z, color='#00CED1')
-
-
 def map2z_point(arr):
     list_arr = []
     for i in range(arr.shape[0]):
@@ -101,7 +78,7 @@ def map2z_point(arr):
 if __name__ == "__main__":
     temp = terrain.generate_map()[0]
     terr = Terr(temp)
-    missile, radar, nfz = mapconstraint.generate_constraint(3, 3, 0, terr.points)
+    missile, radar, nfz = mapconstraint.generate_constraint(0, 0, 0, terr.points)
     global_map = Map(terr, missile, radar, nfz)
     # fig = plt.figure()
     # ax = Axes3D(fig)
@@ -109,16 +86,16 @@ if __name__ == "__main__":
     #     plt_fig(data.trajectory, ax)
     # fig = plt.figure()
     # plt.plot([p.data[i].fitness_wight_factor for i in range(len(p.data))])
-    genome_64_bits = '0000001000' \
+    genome_64_bits = '0000000000' \
                      '0000101000' \
                      '0000000100' \
-                     '0000000011' \
+                     '0000000000' \
                      '0000000000' \
                      '0000000000' \
                      '0000'
     start = np.array([0, 0, global_map.terrain.map(0, 0)])
     goal = np.array([50, 50, global_map.terrain.map(50, 50)])
-    result = evolve(global_map, start, goal, genome_64_bits)
+    result, populations = evolve(global_map, start, goal, genome_64_bits)
     fig = plt.figure()
     ax = Axes3D(fig)
     plt_fig(result.trajectory, ax)

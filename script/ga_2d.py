@@ -1,12 +1,10 @@
 from math import sqrt
 import random
-from typing import Any, Union
 from calculate import *
 from scipy.special import comb
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-import rospy
 from generatemap import terrain
 
 

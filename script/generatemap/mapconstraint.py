@@ -18,7 +18,7 @@ class NFZ:
         self.x_min = x_min
         self.x_max = x_max
         self.y_min = y_min
-        self.x_max = y_max
+        self.y_max = y_max
 
 
 def generate_missile_or_radar(terrain, dtype="missile"):
@@ -32,9 +32,9 @@ def generate_missile_or_radar(terrain, dtype="missile"):
 
 
 def generate_nfz(terrain):
-    x_min = random.rand() * (max(terrain)[0]-30)
+    x_min = random.rand() * (terrain[-1][0]-30)
     x_max = x_min + random.rand()*20 + 10
-    y_min = random.rand()* (max(terrain)[1]-30)
+    y_min = random.rand() * (terrain[-1][1]-30)
     y_max = y_min + random.rand()*20 + 10
     nfz = NFZ(x_min, x_max, y_min, y_max)
     return nfz
