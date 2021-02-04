@@ -1,12 +1,8 @@
-from math import sqrt
 import random
-from typing import Any, Union
 from calculate import *
-import matplotlib.pyplot as plt
-import numpy as np
 import time
-import rospy
 from main import *
+from decoder import *
 
 
 class Individual:
@@ -27,144 +23,48 @@ class Individual:
         else:
             self.control_points_r = control_points
         # self.control_points = rotation2origin(pop.start, self.control_points_r, pop.rotation_matrix)
-        self.trajectory_r = self.curve(pop.curve_type, pop.len_individual)
+        self.trajectory_r = self.curve(pop.soft_inf.curve_type, pop.len_individual)
         self.trajectory = rotation2origin(pop.start, self.trajectory_r, pop.rotation_matrix)
-        self.fitness_wight_factor, self.fitness, self.constraint, self.sort_basis = \
+        self.fitness_wight_factor, self.fitness, self.constraint = \
             fitness(self.trajectory, self.trajectory_r, pop)
-        self.constraint_satisfaction_level = None
+        self.sort_basis = None
+        # self.sort_basis = None
 
-    def curve(self, cv, n):
+    def curve(self, curve, n):
         """"""
-        if cv == '00':
-            trajectory_r = six_bezier(self.control_points_r, n)
-        elif cv == '01':
-            trajectory_r = b_spline(self.control_points_r, n)
-        elif cv == '10':
-            trajectory_r = rts(self.control_points_r, n)
-        else:
-            trajectory_r = tangent_circle_curve(self.control_points_r, n)
-        return trajectory_r
+        return eval(curve)(self.control_points_r, n)
 
 
-class Population:
-    """
-    Create a number of individuals (i.e. a population).
-    """
-    def __init__(self, start, goal, g_map, _num_individual, curve_type, _cp, _rank_param, _elitism):
-        self.data = list()
-        self.num_individual = decode_n_i(_num_individual)
-        self.start = start
-        self.goal = goal
-        self.curve_type = curve_type
-        self.rotation_matrix = self.rotate_coordinate()
-        self.goal_r = rotation2st(start, goal, self.rotation_matrix)
-        self.global_map = g_map
-        self.num_cp = self.decode_cp(_cp)
-        self.upper_bound, self.lower_bound = self.y_boundary(g_map)
-        self.len_individual = self.num_cp * 5
-        self.gen_max = 10 # TODO
-        self.generation = 0
-        self.alpha = 0
-        self.selection_param = None
-        self.selection_cache = 0
-        self.exploit_param = None
-        self.explore_param = None
-        self.elitism = decode_elitism(_elitism)
-        for i in range(self.num_individual):
-            self.data.append(Individual(self))
-        self.rank_score = self.rank_system(_rank_param)
-
-    def rank_system(self, _rank_param):
-        rank_score = []
-        if _rank_param == '00':
-            rank_score = [1 / self.data[i].fitness_wight_factor for i in range(self.num_individual)]
-        if _rank_param == '01':
-            rank_score = [self.num_individual - i for i in range(self.num_individual)]
-        if _rank_param == '10':
-            rank_score = [np.sqrt(self.num_individual-i) for i in range(self.num_individual)]
-        if _rank_param == '11':
-            rank_score = [(self.num_individual-i) ** 2 for i in range(self.num_individual)]
-        return np.array(rank_score)
-
-    def y_boundary(self, g_map):
-        delta_d = 1
-        y_upper = []
-        y_lower = []
-        for each in g_map.radar:
-            o = rotation2st(self.start, each.center, self.rotation_matrix)
-            if -each.radius < o[0] < self.goal_r[0] + each.radius:
-                y_upper.append(o[1]+each.radius)
-                y_lower.append(o[1]-each.radius)
-
-        for each in g_map.missile:
-            o = rotation2st(self.start, each.center, self.rotation_matrix)
-            if -each.radius < o[0] < self.goal_r[0] + each.radius:
-                y_upper.append(o[1] + each.radius)
-                y_lower.append(o[1] - each.radius)
-        points = []
-        for each in g_map.nfz:
-            points.append(rotation2st(self.start, np.array([each.x_min, each.y_min, 0]), self.rotation_matrix))
-            points.append(rotation2st(self.start, np.array([each.x_min, each.y_max, 0]), self.rotation_matrix))
-            points.append(rotation2st(self.start, np.array([each.x_max, each.y_min, 0]), self.rotation_matrix))
-            points.append(rotation2st(self.start, np.array([each.x_max, each.y_max, 0]), self.rotation_matrix))
-        y_upper.append(0)
-        y_lower.append(0)
-        for i in points:
-            if 0 < i[0] < self.goal_r[0]:
-                y_upper.append(i[1])
-                y_lower.append(i[1])
-        return max(max(y_upper), 0) + delta_d, min(min(y_lower), 0) - delta_d
-
-    def rotate_coordinate(self):
-        theta = np.arctan((self.goal[1] - self.start[1])/(self.goal[0]-self.start[0]))
-        if self.goal[0] < self.start[0]:
-            theta += np.pi
-        if self.goal[0] == self.start[0]:
-            theta += np.pi * bool(self.start[1] > self.goal[1])
-        rotation_matrix = np.array([[np.cos(theta),  np.sin(theta), 0],
-                                    [- np.sin(theta), np.cos(theta), 0],
-                                    [0,                0,            1]])
-        return rotation_matrix
-
-    def decode_cp(self, _cp):
-        distance = np.linalg.norm(self.goal[0:2] - self.start[0:2])
-        if _cp == '00':
-            len_points = int(distance // 10 + 2)
-        elif _cp == '01':
-            len_points = int(distance // 5 + 2)
-        elif _cp == '10':
-            len_points = int(distance // 2 + 2)
-        else:
-            len_points = int(distance // 1 + 2)
-        return len_points
+def per_10(distance):
+    return int(distance // 10 + 2)
 
 
-def decode_n_i(_n_i):
-    dict_n_i = {'000': 5,
-                '001': 10,
-                '010': 20,
-                '011': 40,
-                '100': 100,
-                '101': 200,
-                '110': 400,
-                '111': 600}
-    return dict_n_i[_n_i]
+def per_5(distance):
+    return int(distance // 5 + 2)
 
 
-def decode_n_p(_n_p):
-    dict_n_p = {'00': 1,
-                '01': 2,
-                '10': 5,
-                '11': 10}
-    return dict_n_p[_n_p]
+def per_2(distance):
+    return int(distance // 2 + 2)
 
 
-def decode_elitism(_elitism):
-    disc_elitism = {'00': 0,
-                    '01': 0.001,
-                    '10': 0.1,
-                    '11': 0.2}
-    return disc_elitism[_elitism]
+def per_1(distance):
+    return int(distance // 1 + 2)
+
+
+def linear_rank(num):
+    return np.linspace(num, 1, num)
+
+
+def sqrt_rank(num):
+    return np.sqrt(np.linspace(num, 1, num))
+
+
+def ex_rank(num):
+    return np.linspace(num, 1, num) ** 2
+
+
+def reciprocal_rank(num):
+    return 1 / np.linspace(1, num, num)
 
 
 def six_bezier(control_points, n):
@@ -215,9 +115,11 @@ def initialize(g_map, num_cp, start, goal_r):
         if i == 1:
             temp_cp.append(points[0][2] + safe_height)
         else:
+
             pre_terr = current_terr
             current_terr = g_map.terrain.map(int(temp_cp[0]), int(temp_cp[1]))
-            temp_cp.append(np.random.normal(current_terr - pre_terr + points[i-1][2], delta_l / 3))
+
+            temp_cp.append(np.random.normal(current_terr + max(points[i-1][2] - pre_terr, safe_height), delta_l / 3))
         points.append(temp_cp)
     points.append(list(goal_r))
     return points
@@ -228,16 +130,15 @@ def fitness(trajectory, trajectory_r, population):
     Determine the fitness of an individual. Lower is better.
     """
     len_trajectory = len(trajectory)
-    dist_optimal = euclidean_distance(trajectory_r[0], trajectory_r[-1])
+    dist_optimal = population.distance
     h_safe = 2
     rcs = 1000
     f_3 = 0
     f_4 = 0
     h_1 = 0
-    num_out_range = 0
     trajectory_pre = trajectory_r[0:-1]
     trajectory_post = trajectory_r[1:]
-    f_1 = sum(euclidean_distance(trajectory_post, trajectory_pre))
+    f_1 = sum(euclidean_distance(trajectory_post, trajectory_pre)) /dist_optimal
     fly_height = trajectory[:, 2] - population.global_map.terrain.map(
                 trajectory[:, 0].astype(np.int64), trajectory[:, 1].astype(np.int64))
     f_2 = sum(np.maximum(fly_height, 0)) / len_trajectory
@@ -275,9 +176,10 @@ def fitness(trajectory, trajectory_r, population):
         count = find_same_num(x, y)
         if count:
             h_1 += count
-    h_2 = np.sum((trajectory[:, 1] > population.upper_bound) + (trajectory[:, 1] < population.lower_bound))
-    return 0.2 * f_1 + 0.1 * f_2 + 0.3 * f_3 + 0.3 * f_4 + 0.1 * f_5,\
-           [f_1, f_2, f_3, f_4, f_5], [g_1, g_2, g_3, h_1, h_2], None
+    h_2 = np.sum((trajectory[:, 0:2] > population.upper_bound) + (trajectory[:, 0:2] < population.lower_bound))
+
+    return 0.2 * f_1 + 0.1 * f_2 + 0.3 * f_3 + 0.3 * f_4 + 0.1 * f_5, \
+           np.array([f_1, f_2, f_3, f_4, f_5]), np.array([g_1, g_2, g_3, h_1, h_2])
 
 
 def find_same_num(arr_1, arr_2):
@@ -286,7 +188,6 @@ def find_same_num(arr_1, arr_2):
     while i <= len(arr_1)-1 and j <= len(arr_2)-1:
         if arr_1[i] == arr_2[j]:
             cnt += 1
-
         if arr_1[i] <= arr_2[j]:
             i += 1
         else:
@@ -367,7 +268,7 @@ def find_same_num(arr_1, arr_2):
 #     f_1 = f_1 / dist_optimal
 #     h_1 = num_nfz
 #     h_2 = num_out_range
-#     return 0.2 * f_1 + 0.1 * f_2 + 0.3 * f_3 + 0.3 * f_4 + 0.1 * f_5, [f_1, f_2, f_3, f_4, f_5], [g_1, g_2, g_3, h_1, h_2], None
+#     return 0.2 * f_1 + 0.1 * f_2 + 0.3 * f_3 + 0.3 * f_4 + 0.1 * f_5, [f_1, f_2, f_3, f_4, f_5], [g_1, g_2, g_3, h_1, h_2]
 
 
 def binary_search(number, array_input):
@@ -383,26 +284,12 @@ def binary_search(number, array_input):
         return binary_search(number, array_input[0:length_array])
 
 
-def test():
-
-    temp = terrain.generate_map()[0]
-    terr = Terr(temp)
-    missile, radar, nfz = mapconstraint.generate_constraint(10, 10, 10, terr.points)
-    global_map = Map(terr, missile, radar, nfz)
-    t0 = time.clock()
-    p = Population(np.array([0, 0, global_map.terrain.map(0, 0)]),
-                   np.array([50, 50, global_map.terrain.map(50, 50)]), global_map,
-                   '011', curve_type='00', _cp='01', _rank_param='10', _elitism='00')
-    print(time.clock() - t0)
-    fig = plt.figure()
-    ax = Axes3D(fig)
-    for data in p.data:
-        plt_fig(data.trajectory, ax)
-    terrain.plt_terrain(p.start, p.goal, p.global_map, ax)
-    fig = plt.figure()
-    plt.plot([p.data[i].fitness_wight_factor for i in range(len(p.data))])
-    return p
+def test_map(num_1, num_2, num_3):
+    temp_ = terrain.generate_map()[0]
+    terra = Terr(temp_)
+    missile_, radar_, nfz_ = mapconstraint.generate_constraint(num_1, num_2, num_3, terra.points)
+    g_map = Map(terra, missile_, radar_, nfz_)
+    return g_map
 
 
-if __name__ == '__main__':
-    p = test()
+

@@ -12,7 +12,7 @@ def evolve(g_map, start, goal, genome_64_bits):
     result = []
     for each_p in swarms:
         each_p.gen_max = end_condition[1]
-        sort(each_p, genome_64_bits[11:13], genome_64_bits[13:16])
+        each_p.data = sort(each_p, each_p.data, genome_64_bits[11:13], genome_64_bits[13:16])
         # TODO time
         fit_evolve = []
         while not determine_terminate(end_condition, each_p):
@@ -31,7 +31,7 @@ def evolve(g_map, start, goal, genome_64_bits):
             each_p.data = children[0:each_p.num_individual]
             each_p.generation += 1
             each_p.explore_param = None
-            sort(each_p, genome_64_bits[11:13], genome_64_bits[13:16])
+            each_p.data = sort(each_p, each_p.data, genome_64_bits[11:13], genome_64_bits[13:16])
 
             fit_evolve.append(each_p.data[0].fitness_wight_factor)
         result.append(each_p.data[0])
@@ -76,27 +76,26 @@ def map2z_point(arr):
 
 
 if __name__ == "__main__":
-    temp = terrain.generate_map()[0]
-    terr = Terr(temp)
-    missile, radar, nfz = mapconstraint.generate_constraint(0, 0, 0, terr.points)
-    global_map = Map(terr, missile, radar, nfz)
+    global_map = test_map(0, 0, 0)
+    a = time.clock()
+    # p = test_population(global_map)
     # fig = plt.figure()
     # ax = Axes3D(fig)
     # for data in p.data:
     #     plt_fig(data.trajectory, ax)
-    # fig = plt.figure()
     # plt.plot([p.data[i].fitness_wight_factor for i in range(len(p.data))])
-    genome_64_bits = '0000000000' \
+    genome_64_bits = '1000000000' \
                      '0000101000' \
                      '0000000100' \
-                     '0000000000' \
+                     '0000000010' \
                      '0000000000' \
                      '0000000000' \
                      '0000'
     start = np.array([0, 0, global_map.terrain.map(0, 0)])
     goal = np.array([50, 50, global_map.terrain.map(50, 50)])
     result, populations = evolve(global_map, start, goal, genome_64_bits)
+    print(time.clock() - a)
     fig = plt.figure()
     ax = Axes3D(fig)
     plt_fig(result.trajectory, ax)
-    plt_terrain(start, goal, global_map, ax)
+    terrain.plt_terrain(start, goal, global_map, ax)

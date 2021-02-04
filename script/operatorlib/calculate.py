@@ -394,10 +394,52 @@ def merge(left, right):
     return c
 
 
+def rotate_coordinate(start, goal):
+    theta = np.arctan((goal[1] - start[1])/(goal[0]-start[0]))
+    if goal[0] < start[0]:
+        theta += np.pi
+    if goal[0] == start[0]:
+        theta += np.pi * bool(start[1] > goal[1])
+    rotation_matrix = np.array([[np.cos(theta),  np.sin(theta), 0],
+                                [- np.sin(theta), np.cos(theta), 0],
+                                [0,                0,            1]])
+    return rotation_matrix
+
+
+def y_boundary(population, g_map):
+    delta_d = 5
+    y_upper = []
+    y_lower = []
+    for each in g_map.radar:
+        o = rotation2st(population.start, each.center, population.rotation_matrix)
+        if -each.radius < o[0] < population.goal_r[0] + each.radius:
+            y_upper.append(o[1]+each.radius)
+            y_lower.append(o[1]-each.radius)
+
+    for each in g_map.missile:
+        o = rotation2st(population.start, each.center, population.rotation_matrix)
+        if -each.radius < o[0] < population.goal_r[0] + each.radius:
+            y_upper.append(o[1] + each.radius)
+            y_lower.append(o[1] - each.radius)
+    points = []
+    for each in g_map.nfz:
+        points.append(rotation2st(population.start, np.array([each.x_min, each.y_min, 0]), population.rotation_matrix))
+        points.append(rotation2st(population.start, np.array([each.x_min, each.y_max, 0]), population.rotation_matrix))
+        points.append(rotation2st(population.start, np.array([each.x_max, each.y_min, 0]), population.rotation_matrix))
+        points.append(rotation2st(population.start, np.array([each.x_max, each.y_max, 0]), population.rotation_matrix))
+    y_upper.append(0)
+    y_lower.append(0)
+    for i in points:
+        if 0 < i[0] < population.goal_r[0]:
+            y_upper.append(i[1])
+            y_lower.append(i[1])
+    return max(max(y_upper), 0) + delta_d, min(min(y_lower), 0) - delta_d
+
+
 def plt_fig(points, ax):
     # 3d fig
     l = len(points)
     X =[points[i][0] for i in range(l)]
     Y =[points[i][1] for i in range(l)]
     Z =[points[i][2] for i in range(l)]
-    ax.plot(X, Y, Z)
+    ax.plot(X, Y, Z, alpha=1)

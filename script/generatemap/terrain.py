@@ -164,7 +164,12 @@ def plt_terrain(start_point, target_point, g_map, ax_3d):
     y = np.arange(begin_y - 10, end_y + 10, 1)
     x, y = np.meshgrid(x, y)
     z = g_map.terrain.map(x, y)
-    ax_3d.plot_surface(x, y, z, color='orange')
+    ax_3d.plot_surface(x, y, z,
+                       rstride=2, cstride=2,
+                       cmap=plt.get_cmap('rainbow'),
+                       alpha=1,
+                       edgecolors=[0, 0, 0])
+    # ax_3d.contour(x, y, z, zdir='z', offset=-1, camp='rainbow')
 
 
 if __name__ == "__main__":
