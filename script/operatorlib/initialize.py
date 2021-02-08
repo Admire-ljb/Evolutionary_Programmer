@@ -17,11 +17,7 @@ class Individual:
         num_cp: the number of control_points
         coordinates: the rotate coordinates of ST
         """
-        if control_points is None:
-            self.control_points_r = np.array(initialize(pop.global_map, pop.num_cp,
-                                             pop.start, pop.goal_r))
-        else:
-            self.control_points_r = control_points
+        self.control_points_r = control_points
         # self.control_points = rotation2origin(pop.start, self.control_points_r, pop.rotation_matrix)
         self.trajectory_r = self.curve(pop.soft_inf.curve_type, pop.len_individual)
         self.trajectory = rotation2origin(pop.start, self.trajectory_r, pop.rotation_matrix)
@@ -108,7 +104,7 @@ def initialize(g_map, num_cp, start, goal_r):
     points = list()
     start_r = [0, 0, start[2]]
     points.append(start_r)
-    delta_l = goal_r[0] / (num_cp -1)
+    delta_l = goal_r[0] / (num_cp - 1)
     current_terr = g_map.terrain.map(0, 0)
     for i in range(1, num_cp-1):
         temp_cp = list()

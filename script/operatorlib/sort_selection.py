@@ -18,8 +18,12 @@ from initialize import *
 
 def penalty_sort(population, individuals, _so_param):
     r_k = eval(_so_param)(population.gen_max, population.generation)
-    num = len(individuals)
-    fit = np.array([individuals[i].fitness_wight_factor for i in range(num)])
+    a = time.clock()
+    for i in range(100):
+        fit = np.array([individuals[i, j].fitness_wight_factor
+                        for i in range(individuals.shape[0])
+                        for j in range(individuals.shape[1])]).reshape(individuals.shape)
+    print(time.clock() - a)
     con = np.array([individuals[i].constraint for i in range(num)])
     penalty = np.sum(con ** 2, axis=1)
     sort_basis = r_k * penalty + fit
@@ -31,6 +35,24 @@ def penalty_sort(population, individuals, _so_param):
     #     individual.sort_basis = individual.fitness_wight_factor + r_k * penalty
     # population.data.sort(key=lambda x: x.sort_basis)
     return sorted_individuals
+
+
+
+# def penalty_sort(population, individuals, _so_param):
+#     r_k = eval(_so_param)(population.gen_max, population.generation)
+#     num = len(individuals)
+#     fit = np.array([individuals[i].fitness_wight_factor for i in range(num)])
+#     con = np.array([individuals[i].constraint for i in range(num)])
+#     penalty = np.sum(con ** 2, axis=1)
+#     sort_basis = r_k * penalty + fit
+#     inx = np.argsort(sort_basis, axis=-1, kind='quicksort', order=None)
+#     sorted_individuals = individuals[inx]
+#     """Delete"""
+#     # for individual in population.data:
+#     #     penalty = sum(individual.constraint ** 2)
+#     #     individual.sort_basis = individual.fitness_wight_factor + r_k * penalty
+#     # population.data.sort(key=lambda x: x.sort_basis)
+#     return sorted_individuals
 
 
 """old rk, delete"""
