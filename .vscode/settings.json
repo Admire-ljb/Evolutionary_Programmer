@@ -1,0 +1,11 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/ljb/catkin_ws/devel/lib/python2.7/dist-packages",
+        "/opt/ros/melodic/lib/python2.7/dist-packages",
+        // "/home/ljb/test_env_ros/devel/lib/python3/dist-packages/"
+    ],
+    "files.associations": {
+        "numeric": "cpp",
+        "algorithm": "cpp"
+    }
+}

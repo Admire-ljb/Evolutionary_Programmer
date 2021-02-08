@@ -1,0 +1,48 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "",
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "/home/ljb/pkg_slam_about/matplotlib-cpp/**",
+                "/home/ljb/catkin_ws/devel/include/**",
+                "/opt/ros/melodic/include/**",
+                "/home/ljb/catkin_ws/src/navigation/amcl/include/**",
+                "/home/ljb/catkin_ws/src/navigation/base_local_planner/include/**",
+                "/home/ljb/catkin_ws/src/VINS-Fusion/camera_models/include/**",
+                "/home/ljb/catkin_ws/src/navigation/carrot_planner/include/**",
+                "/home/ljb/catkin_ws/src/navigation/clear_costmap_recovery/include/**",
+                "/home/ljb/catkin_ws/src/mavros_controllers/controller_msgs/include/**",
+                "/home/ljb/catkin_ws/src/navigation/costmap_2d/include/**",
+                "/home/ljb/catkin_ws/src/navigation/dwa_local_planner/include/**",
+                "/home/ljb/catkin_ws/src/ga/include/**",
+                "/home/ljb/catkin_ws/src/mavros_controllers/geometric_controller/include/**",
+                "/home/ljb/catkin_ws/src/navigation/global_planner/include/**",
+                "/home/ljb/catkin_ws/src/navigation/map_server/include/**",
+                "/home/ljb/catkin_ws/src/mav_comm/mav_msgs/include/**",
+                "/home/ljb/catkin_ws/src/mav_comm/mav_planning_msgs/include/**",
+                "/home/ljb/catkin_ws/src/navigation/move_base/include/**",
+                "/home/ljb/catkin_ws/src/navigation/move_slow_and_clear/include/**",
+                "/home/ljb/catkin_ws/src/navigation/nav_core/include/**",
+                "/home/ljb/catkin_ws/src/navigation/navfn/include/**",
+                "/home/ljb/catkin_ws/src/perception_pcl/pcl_conversions/include/**",
+                "/home/ljb/catkin_ws/src/perception_pcl/pcl_ros/include/**",
+                "/home/ljb/catkin_ws/src/px4_test/include/**",
+                "/home/ljb/catkin_ws/src/realsense_gazebo_plugin/include/**",
+                "/home/ljb/catkin_ws/src/navigation/rotate_recovery/include/**",
+                "/home/ljb/catkin_ws/src/mavros_controllers/trajectory_publisher/include/**",
+                "/home/ljb/catkin_ws/src/navigation/voxel_grid/include/**",
+                "/home/ljb/catkin_ws/src/Evoluationary_Programmer/include/**",
+                "/usr/include/**"
+            ],
+            "name": "ROS",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/opt/gcc-arm-none-eabi-9-2020-q2-update/bin/arm-none-eabi-gcc",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++14"
+        }
+    ],
+    "version": 4
+}
