@@ -208,10 +208,10 @@ def decode_exploit_param(_exploit_param, exploit):
                               '10': 0.7,
                               '11': 0.8}
     elif exploit == 'pso_exploit':
-        dict_exploit_param = {'00': [0.5, 3.5],
-                              '01': [1.5, 3.5],
-                              '10': [0.5, 4.5],
-                              '11': [1.5, 4.5]}
+        dict_exploit_param = {'00': [0.05, 0.35],
+                              '01': [0.15, 0.35],
+                              '10': [0.05, 0.45],
+                              '11': [0.15, 0.45]}
     elif exploit == 'safari':
         dict_exploit_param = {'00': 0.1,
                               '01': 0.2,
@@ -219,10 +219,10 @@ def decode_exploit_param(_exploit_param, exploit):
                               '11': 0.4}
     elif exploit == 'commensalism':
         # TODO
-        dict_exploit_param = {'00': "np.random.uniform(-1,1)",
-                              '01': "np.random.normal(0, 1/3)",
-                              '10': "np.random.normal(0, 1/4)",
-                              '11': "np.random.normal(0, 1/5)"}
+        dict_exploit_param = {'00': "np.random.uniform(0, 1,",
+                              '01': "np.random.normal(1/2, 1/6,",
+                              '10': "np.random.normal(1/2, 1/8,",
+                              '11': "np.random.normal(1/2, 1/10,"}
     elif exploit == 'de_rand':
         # TODO
         dict_exploit_param = {'00': 0.5,

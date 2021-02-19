@@ -18,24 +18,21 @@ from initialize import *
 
 def penalty_sort(population, individuals, _so_param):
     r_k = eval(_so_param)(population.gen_max, population.generation)
-    a = time.clock()
-    for i in range(100):
-        fit = np.array([individuals[i, j].fitness_wight_factor
-                        for i in range(individuals.shape[0])
-                        for j in range(individuals.shape[1])]).reshape(individuals.shape)
-    print(time.clock() - a)
-    con = np.array([individuals[i].constraint for i in range(num)])
-    penalty = np.sum(con ** 2, axis=1)
-    sort_basis = r_k * penalty + fit
+    fit = np.vectorize(lambda obj: obj.fitness_wight_factor)
+    con = np.vectorize(lambda obj: np.sum(obj.constraint ** 2))
+    fit_arr = fit(individuals)
+    con_arr = con(individuals)
+    # con = np.array([individuals[i].constraint for i in range(num)])
+    # penalty = np.sum(con ** 2, axis=1)
+    sort_basis = r_k * con_arr + fit_arr
     inx = np.argsort(sort_basis, axis=-1, kind='quicksort', order=None)
-    sorted_individuals = individuals[inx]
+    # sorted_individuals = individuals[inx]
     """Delete"""
     # for individual in population.data:
     #     penalty = sum(individual.constraint ** 2)
     #     individual.sort_basis = individual.fitness_wight_factor + r_k * penalty
     # population.data.sort(key=lambda x: x.sort_basis)
-    return sorted_individuals
-
+    return inx
 
 
 # def penalty_sort(population, individuals, _so_param):
@@ -120,10 +117,10 @@ def non_dominated_sort(population, individuals, _so_param):
     all_sort = np.argsort(values, axis=0)
     for i in range(len(front)):
         crowding_distance_values.append(crowding_distance(values, front[i], max_min_obj, all_sort))
-    sorted_individuals = np.array([], dtype=np.int32)
+    inx = np.array([], dtype=np.int32)
     for i in range(len(front)):
         sorted_inx = np.flipud(np.argsort(crowding_distance_values[i]))
-        sorted_individuals = np.append(sorted_individuals, individuals[front[i][sorted_inx]])
+        inx = np.append(inx, front[i][sorted_inx])
     """old delete"""
     # for i in range(len(front)):
     #     sorted_inx = np.flipud(np.argsort(crowding_distance_values[i])
@@ -141,7 +138,7 @@ def non_dominated_sort(population, individuals, _so_param):
     #     count = int(count + 1)
     # inx = np.argsort(sort_basis, axis=-1, kind='quicksort', order=None)
     # sorted_individuals = individuals[inx]
-    return sorted_individuals
+    return inx
 
 
 def fast_non_dominated_sort(values):
@@ -274,7 +271,7 @@ def alpha_level_sort(population, individuals, _so_param):
     inx = np.where((constraint_temp < alpha) == 1)[0]
     sort_basis[inx] = 1000 / constraint_temp[inx]
     sort_basis += fitness_weight
-    return individuals[np.argsort(sort_basis)]
+    return np.argsort(sort_basis)
 
 
 def compute_alpha_1(population):
@@ -341,7 +338,7 @@ def num_of_un_constraint(population, individuals, _so_param):
         if individual.sort_basis is None:
             individual.sort_basis = un_constraint(individual.fitness_wight_factor, individual.constraint)
         sort_basis = np.append(sort_basis, individual.sort_basis)
-    return individuals[np.argsort(sort_basis)]
+    return np.argsort(sort_basis)
 
 
 def un_constraint(fit, constraint):
@@ -404,20 +401,19 @@ def un_constraint(fit, constraint):
 #     return individual
 
 
-def truncation_selection(population, select_pool, se_param):
-    individual = select_pool[population.selection_cache]
-    if population.selection_cache < se_param * select_pool.size:
-        population.selection_cache += 1
-    else:
-        population.selection_cache = 0
-    return individual
+def truncation_selection(population, select_pool, se_param, num):
+    max_inx = int(se_param * select_pool.size + 1)
+    inx = np.arange(0, max_inx, 1)
+    circle = num // inx.size
+    mod_ = np.mod(num, inx.size)
+    inx = np.concatenate((np.tile(inx, circle), inx[0:mod_]))
+    return inx
 
 
-def tournament_selection(population, select_pool, se_param):
-    cache = []
-    for i in range(se_param):
-        cache.append(np.random.randint(0, select_pool.size))
-    return select_pool[min(cache)]
+def tournament_selection(population, select_pool, se_param, num):
+    select_cache = np.array([np.random.randint(0, select_pool.size, size=num) for i in range(se_param)])
+    inx = np.min(select_cache, axis=0)
+    return inx
 
 
 def fitness_prob(select_pool):
@@ -463,7 +459,7 @@ def ranking_system_allow_duplication(population, select_pool):
     return ranking_system_prob(population, select_pool), 1
 
 
-def roulette_wheel_selection(population, select_pool, se_param):
+def roulette_wheel_selection(population, select_pool, se_param, num):
     # if population.selection_param[0] == 'fitness_no_duplication' or population.selection_param[0] == 'fitness':
     #     if len(population.selection_param) == 1:
     #         population.selection_param.append(sum([1 / population.data[x].fitness_wight_factor for x in range(population.num_individual)]))
@@ -473,9 +469,9 @@ def roulette_wheel_selection(population, select_pool, se_param):
     #     if len(population.selection_param) == 1:
     #         population.selection_param.append(sum(population.rank_score))
     #         population.selection_param.append(population.rank_score / population.selection_param[1])
-    if population.selection_cache == 0:
-        population.selection_cache = eval(se_param)(population, select_pool)
-    return select_pool[rws_selection_result(population.selection_cache[0])]
+    selection_cache = eval(se_param)(population, select_pool)
+
+    return rws_selection_result(selection_cache[0], num)
     # while True:
     #     index = rws_selection_result(population.num_individual, population.selection_param[2])
     #     if population.selection_param[0] == 'fitness' or population.selection_param[0] == 'ranking_system':
@@ -499,20 +495,22 @@ def roulette_wheel_selection(population, select_pool, se_param):
 #     return index
 
 
-def rws_selection_result(selection_basis):
-    rand_0_1 = np.random.rand()
-    return np.argmax(selection_basis >= rand_0_1)
+def rws_selection_result(selection_basis, num):
+    rand_0_1 = np.random.rand(num, 1)
+    selection_basis = np.tile(selection_basis, num).reshape(num, -1)
+    return np.argmax(selection_basis >= rand_0_1, axis=1)
 
 
-def stochastic_universal_selection(population, select_pool, se_param):
-    if population.selection_cache == 0:
-        population.selection_cache = [fitness_prob(select_pool), []]
-    if not population.selection_cache[1]:
-        rand_origin = np.random.rand()/se_param
-        rand_ultimate = np.arange(rand_origin, 1, 1 / se_param)
-        for each in rand_ultimate:
-            population.selection_cache[1].append(np.argmax(population.selection_cache[0] >= each))
-    return select_pool[population.selection_cache[1].pop()]
+def stochastic_universal_selection(population, select_pool, se_param, num):
+    selection_prob = np.tile(fitness_prob(select_pool), num).reshape(num, -1)
+    circle = num // se_param
+    mod_ = np.mod(num, se_param)
+    rand_origin = np.random.rand(circle)/se_param
+    rand_ultimate = np.array([])
+    for i in range(circle):
+        rand_ultimate = np.append(rand_ultimate, np.arange(rand_origin[i], 1, 1 / se_param))
+    rand_ultimate = np.concatenate((rand_ultimate, np.random.rand(mod_))).reshape(-1, 1)
+    return np.argmax(selection_prob >= rand_ultimate, axis=1)
 
     # if len(population.selection_param) == 2:
     #     population.selection_param.append(population.rank_score / sum(population.rank_score))

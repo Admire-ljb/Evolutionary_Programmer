@@ -26,7 +26,7 @@ class Individual:
         self.sort_basis = None
         # self.sort_basis = None
         self.velocity = np.zeros([pop.num_cp, 3])
-        self.p_best = self
+        # self.p_best = self
 
     def curve(self, curve, n):
         """"""
@@ -136,7 +136,7 @@ def fitness(trajectory, trajectory_r, population):
     h_1 = 0
     trajectory_pre = trajectory_r[0:-1]
     trajectory_post = trajectory_r[1:]
-    f_1 = sum(euclidean_distance(trajectory_post, trajectory_pre)) /dist_optimal
+    f_1 = sum(euclidean_distance(trajectory_post, trajectory_pre)) / dist_optimal
     fly_height = trajectory[:, 2] - population.global_map.terrain.map(
                 trajectory[:, 0].astype(np.int64), trajectory[:, 1].astype(np.int64))
     f_2 = sum(np.maximum(fly_height, 0)) / len_trajectory

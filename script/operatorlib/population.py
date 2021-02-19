@@ -24,53 +24,42 @@ class Population:
         self.generation = 0
         self.sort_cache = 0
         self.selection_cache = 0
-        self.control_points_arr = np.array([initialize(g_map, self.num_cp, start, self.goal_r)
+        self.data = np.array([initialize(g_map, self.num_cp, start, self.goal_r)
                                             for x in range(self.num_individual)])
-        self.data = np.array([Individual(self, self.control_points_arr[x]) for x in range(self.num_individual)])
+        self.velocity = np.zeros(self.data.shape)
+        self.p_best = self.data.copy()
+        self.individuals = np.array([Individual(self, self.data[x]) for x in range(self.num_individual)])
         self.rank_probability = None
         self.exploitation_params = None
         # self.sort_basis = None
 
-    def update_generation(self):
+    def update_generation(self, data):
         self.generation += 1
         self.sort_cache = 0
         self.selection_cache = 0
-        if self.soft_inf.exploit == 'pso_exploit':
-            param_max = np.array([0.9, self.soft_inf.exploit_param[1]])
-            param_min = np.array([0.4, self.soft_inf.exploit_param[0]])
-            self.exploitation_params = param_max - (param_max - param_min) * self.generation / self.gen_max
-            c_2 = param_max[1] + (param_max[1] - param_min[1]) * self.generation / self.gen_max
-            self.exploitation_params = np.append(self.exploitation_params, c_2)
-        elif self.soft_inf.exploit == 'safari':
-            control_points_r_safari = np.array([
-                self.data[x].control_points_r for x in range(int(
-                    self.num_individual * self.soft_inf.exploit_param) + 1)])
-            disturbing_term = np.random.normal(0, 0.2, size=control_points_r_safari.shape)
-            disturbing_term[:, :, 0] = 0
-            disturbing_term[:, 0, :] = 0
-            disturbing_term[:, -1, :] = 0
-            control_points_r_safari += disturbing_term
-            leader_wolves = np.array([])
-            for each in control_points_r_safari:
-                leader_wolves = np.append(leader_wolves, Individual(self, each))
-            leader_wolves = self.sort(leader_wolves)
-            self.exploitation_params = leader_wolves[0].control_points_r
+        self.data = data
+        individuals = instantiation(self, self.data)
+        if self.soft_inf.exploit == "pso_exploit":
+            for x in range(individuals.size):
+                if self.sort(np.array([individuals[x], self.individuals[x]]))[0] == 0:
+                    self.p_best[x] = self.data[x].copy()
+        self.individuals = individuals
 
     def sort(self, sort_data):
         return eval(self.soft_inf.so)(self, sort_data, self.soft_inf.so_param)
 
-    def selection(self, select_pool):
-        return eval(self.soft_inf.se)(self, select_pool, self.soft_inf.se_param)
+    def selection(self, select_pool, num_of_results):
+        return eval(self.soft_inf.se)(self, select_pool, self.soft_inf.se_param, num_of_results)
 
     def exploitation(self, individuals):
-        return eval(self.soft_inf.exploit)(self, individuals, self.soft_inf.exploit_param, self.soft_inf.twins)
+        return eval(self.soft_inf.exploit)(self, individuals, self.soft_inf.exploit_param)
 
 
 def test_population(g_map):
     # t0 = time.clock()
-    genomes = '1000000000' \
+    genomes = '1000001100' \
               '0110101000' \
-              '1111100101' \
+              '0111101001' \
               '0000000010' \
               '0000000000' \
               '0000000000' \
@@ -93,18 +82,22 @@ def test_population(g_map):
 if __name__ == '__main__':
     global_map = test_map(0, 0, 0)
     p = test_population(global_map)
-    p.data = p.sort(p.data)
+    inx = [p.sort(p.individuals)]
+    p.individuals = p.individuals[inx]
+    p.data = p.data[inx]
     # p.update_generation()
-    # b = p.selection(p.data)
-    # c = p.selection(p.data)
-    # d = p.exploitation(np.array([b, c]))
+    b = p.selection(p.individuals, p.num_individual)
+    figure = plt.figure()
+    ax = Axes3D(figure)
 
-    # figure = plt.figure()
-    # ax = Axes3D(figure)
-    # plt_fig(b.trajectory, ax, "parent_1")
-    # plt_fig(c.trajectory, ax, "parent_2")
-    # plt_fig(d[0].trajectory, ax, "child_1")
-    # plt_fig(d[1].trajectory, ax, "child_2")
+    plt_fig(p.individuals[b[0]].trajectory, ax, "parent_1")
+    plt_fig(p.individuals[b[1]].trajectory, ax, "parent_2")
+    plt_fig(p.individuals[0].trajectory, ax, "parent_3")
+    # c = p.selection(p.data)
+    d = p.exploitation(b)
+    p.update_generation(d)
+    plt_fig(p.individuals[0].trajectory, ax, "child_1")
+    plt_fig(p.individuals[1].trajectory, ax, "child_2")
     # for data in p.data:
     #     plt_fig(data.trajectory, ax)
     # terrain.plt_terrain(p.start, p.goal, p.global_map, ax)
