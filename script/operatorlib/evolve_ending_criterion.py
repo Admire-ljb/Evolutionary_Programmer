@@ -98,4 +98,4 @@ if __name__ == "__main__":
     fig = plt.figure()
     ax = Axes3D(fig)
     plt_fig(result.trajectory, ax)
-    terrain.plt_terrain(start, goal, global_map, ax)
+    plt_terrain(start, goal, global_map, ax)

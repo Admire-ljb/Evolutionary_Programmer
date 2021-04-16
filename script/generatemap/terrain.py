@@ -1,7 +1,7 @@
 import graphics.engine
 import perlin
 import math
-# import pcl
+import pcl
 import numpy as np
 # from pcl import pcl_visualization
 import matplotlib.pyplot as plt
@@ -147,28 +147,7 @@ def constraint_plt(missile, radar, nfz, fig):
         #     ax.plot([xb], [yb], [zb], 'w')
 
 
-def plt_terrain(start_point, target_point, g_map, ax_3d):
-    if start_point[0] < target_point[0]:
-        begin_x = int(start_point[0])
-        end_x = int(target_point[0])
-    else:
-        begin_x = int(target_point[0])
-        end_x = int(start_point[0])
-    if start_point[1] < target_point[1]:
-        begin_y = int(start_point[1])
-        end_y = int(target_point[1])
-    else:
-        begin_y = int(target_point[1])
-        end_y = int(start_point[1])
-    x = np.arange(begin_x - 10, end_x + 10, 1)
-    y = np.arange(begin_y - 10, end_y + 10, 1)
-    x, y = np.meshgrid(x, y)
-    z = g_map.terrain.map(x, y)
-    ax_3d.plot_surface(x, y, z,
-                       rstride=2, cstride=2,
-                       cmap=plt.get_cmap('rainbow'),
-                       alpha=1,
-                       edgecolors=[0, 0, 0])
+
     # ax_3d.contour(x, y, z, zdir='z', offset=-1, camp='rainbow')
 
 

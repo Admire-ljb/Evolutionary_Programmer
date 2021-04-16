@@ -33,33 +33,34 @@ class SoftInformation:
         self.anti = decode_anti(genomes[56:58])
         self.fbcl = decode_fbcl(genomes[58:59])
         self.decy = decode_decy(genomes[59:61])
+        self.pfih = decode_pfih(genomes[61:64])
 
 
 def decode_cp(_cp):
-    dict_cp = {'00': 'per_10',
-               '01': 'per_5',
-               '10': 'per_2',
-               '11': 'per_1'}
+    dict_cp = {'00': 'per_20',
+               '01': 'per_10',
+               '10': 'per_5',
+               '11': 'per_2'}
     return dict_cp[_cp]
 
 
 def decode_n_p(_n_p):
     dict_n_p = {'00': 1,
                 '01': 2,
-                '10': 5,
-                '11': 10}
+                '10': 3,
+                '11': 5}
     return dict_n_p[_n_p]
 
 
 def decode_n_i(_n_i):
-    dict_n_i = {'000': 5,
-                '001': 10,
-                '010': 20,
-                '011': 40,
-                '100': 100,
-                '101': 200,
-                '110': 400,
-                '111': 600}
+    dict_n_i = {'000': 2,
+                '001': 3,
+                '010': 5,
+                '011': 10,
+                '100': 15,
+                '101': 20,
+                '110': 25,
+                '111': 30}
     return dict_n_i[_n_i]
 
 
@@ -225,16 +226,16 @@ def decode_exploit_param(_exploit_param, exploit):
                               '11': "np.random.normal(1/2, 1/10,"}
     elif exploit == 'de_rand':
         # TODO
-        dict_exploit_param = {'00': 0.5,
-                              '01': 0.6,
-                              '10': 0.7,
-                              '11': 0.8}
+        dict_exploit_param = {'00': {"q": None, "c": 0.1, "u_cr": 0.5, "u_f": 0.5},
+                              '01': {"q": None, "c": 0.1,  "u_cr": 0.5, "u_f": 0.5},
+                              '10': {"q": None, "c": 0.05,  "u_cr": 0.5, "u_f": 0.5},
+                              '11': {"q": None, "c": 0.1,  "u_cr": 0.5, "u_f": 0.5}}
     else:
         # TODO
-        dict_exploit_param = {'00': 0.5,
-                              '01': 0.6,
-                              '10': 0.7,
-                              '11': 0.8}
+        dict_exploit_param = {'00': {"q": 0.05, "c": 0.1, "u_cr": 0.5, "u_f": 0.5},
+                              '01': {"q": 0.1, "c": 0.1,  "u_cr": 0.5, "u_f": 0.5},
+                              '10': {"q": 0.15, "c": 0.05,  "u_cr": 0.5, "u_f": 0.5},
+                              '11': {"q": 0.15, "c": 0.1,  "u_cr": 0.5, "u_f": 0.5}}
     return dict_exploit_param[_exploit_param]
 
 
@@ -297,14 +298,14 @@ def decode_infer(_infer):
 def decode_end(_end, _end_param):
     dict_end = {"0": "gen",
                 "1": "time"}
-    dict_end_param = {'000': 20,
-                      '001': 40,
-                      '010': 60,
-                      '011': 80,
-                      '100': 100,
-                      '101': 150,
-                      '110': 200,
-                      '111': 500}
+    dict_end_param = {'000': 3,
+                      '001': 5,
+                      '010': 8,
+                      '011': 10,
+                      '100': 15,
+                      '101': 20,
+                      '110': 25,
+                      '111': 40}
     return dict_end[_end], dict_end_param[_end_param]
 
 

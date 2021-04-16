@@ -34,14 +34,15 @@
                 "/home/ljb/catkin_ws/src/navigation/rotate_recovery/include/**",
                 "/home/ljb/catkin_ws/src/mavros_controllers/trajectory_publisher/include/**",
                 "/home/ljb/catkin_ws/src/navigation/voxel_grid/include/**",
-                "/home/ljb/catkin_ws/src/Evoluationary_Programmer/include/**",
+                "/home/ljb/catkin_ws/src/evoluationary_programmer/include/**",
                 "/usr/include/**"
             ],
             "name": "ROS",
             "intelliSenseMode": "gcc-x64",
             "compilerPath": "/opt/gcc-arm-none-eabi-9-2020-q2-update/bin/arm-none-eabi-gcc",
             "cStandard": "gnu17",
-            "cppStandard": "gnu++14"
+            "cppStandard": "gnu++14",
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
     "version": 4

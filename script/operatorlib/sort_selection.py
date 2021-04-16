@@ -138,7 +138,7 @@ def non_dominated_sort(population, individuals, _so_param):
     #     count = int(count + 1)
     # inx = np.argsort(sort_basis, axis=-1, kind='quicksort', order=None)
     # sorted_individuals = individuals[inx]
-    return inx
+    return inx.astype(int)
 
 
 def fast_non_dominated_sort(values):
@@ -163,7 +163,7 @@ def fast_non_dominated_sort(values):
         if len(temp_b) != 0:
             for each in temp_b:
                 temp_a = np.delete(temp_a, np.where(temp_a == each)[0])
-                temp_b = np.delete(temp_b, np.where(temp_b == each)[0])
+                temp_c = np.delete(temp_c, np.where(temp_c == each)[0])
         the_dominated = temp_a
         the_dominator = temp_c
         n[i] += len(the_dominator)
@@ -428,7 +428,7 @@ def fitness_no_duplication(population, select_pool):
     return fitness_prob(select_pool), 0
 
 
-def fitness_allow_duplication(select_pool):
+def fitness_allow_duplication(population, select_pool):
     return fitness_prob(select_pool), 1
 
 

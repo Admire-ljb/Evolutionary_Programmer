@@ -3,6 +3,8 @@ from calculate import *
 import time
 from main import *
 from decoder import *
+from generatemap import terrain
+from generatemap import mapconstraint
 
 
 class Individual:
@@ -33,6 +35,10 @@ class Individual:
         return eval(curve)(self.control_points_r, n)
 
 
+def per_20(distance):
+    return int(distance // 20 + 2)
+
+
 def per_10(distance):
     return int(distance // 10 + 2)
 
@@ -43,10 +49,6 @@ def per_5(distance):
 
 def per_2(distance):
     return int(distance // 2 + 2)
-
-
-def per_1(distance):
-    return int(distance // 1 + 2)
 
 
 def linear_rank(num):
@@ -87,13 +89,13 @@ def b_spline(control_points, n):
 def rts(control_points, n):
     trajectory = []
         # TODO
-    return trajectory
+    return b_spline(control_points, n)
 
 
 def tangent_circle_curve(control_points, n):
     trajectory = []
         # TODO
-    return trajectory
+    return bezier_curve(control_points, n)
 
 
 def initialize(g_map, num_cp, start, goal_r):
@@ -128,30 +130,36 @@ def fitness(trajectory, trajectory_r, population):
     Determine the fitness of an individual. Lower is better.
     """
     len_trajectory = len(trajectory)
+    trajectory_ = trajectory[len_trajectory // 10: len_trajectory // 10 * 9]
+    trajectory_r_ = trajectory_r[len_trajectory // 10: len_trajectory // 10 * 9]
+    len_trajectory = len(trajectory_)
     dist_optimal = population.distance
-    h_safe = 2
+    h_safe = 0.5
     rcs = 1000
     f_3 = 0
     f_4 = 0
     h_1 = 0
-    trajectory_pre = trajectory_r[0:-1]
-    trajectory_post = trajectory_r[1:]
+    trajectory_pre = trajectory_r_[0:-1]
+    trajectory_post = trajectory_r_[1:]
     f_1 = sum(euclidean_distance(trajectory_post, trajectory_pre)) / dist_optimal
-    fly_height = trajectory[:, 2] - population.global_map.terrain.map(
-                trajectory[:, 0].astype(np.int64), trajectory[:, 1].astype(np.int64))
+    tmp = population.global_map.terrain.map(trajectory_[:, 0].astype(np.int64), trajectory_[:, 1].astype(np.int64))
+    if tmp is None:
+        fly_height = 100
+    else:
+        fly_height = trajectory_[:, 2] - tmp
     f_2 = sum(np.maximum(fly_height, 0)) / len_trajectory
 
     for radar in population.global_map.radar:
-        dis_r = np.minimum(euclidean_distance(radar.center, trajectory) - radar.radius, 0)
+        dis_r = np.minimum(euclidean_distance(radar.center, trajectory_) - radar.radius, 0)
         f_3 += sum((-dis_r) / radar.radius * 1 / (1 + 0.1 * (dis_r + radar.radius) ** 4 / rcs))
 
     for missile in population.global_map.missile:
-        dis_m = np.minimum(euclidean_distance(missile.center, trajectory), missile.radius)
+        dis_m = np.minimum(euclidean_distance(missile.center, trajectory_), missile.radius)
         temp_m = missile.radius ** 4
         f_4 += sum((dis_m < missile.radius) * temp_m / (temp_m + dis_m ** 4))
 
-    trajectory_mid = trajectory[int(0.1 * len_trajectory)
-                                : int(0.9 * len_trajectory)]
+    trajectory_mid = trajectory_[int(0.1 * len_trajectory)
+                                 : int(0.9 * len_trajectory)]
     trajectory_pre_mid = trajectory_mid[0: -1]
     trajectory_next_mid = trajectory_mid[1:]
     line = trajectory_next_mid - trajectory_pre_mid
@@ -169,12 +177,12 @@ def fitness(trajectory, trajectory_r, population):
     g_2 = max(max(beta_k-s_k), 0)
     g_3 = max(h_safe - min(fly_height), 0)
     for no_fly in population.global_map.nfz:
-        x = np.where((trajectory[:, 0] > no_fly.x_min) & (trajectory[:, 0] < no_fly.x_max))[0]
-        y = np.where((trajectory[:, 1] > no_fly.y_min) & (trajectory[:, 1] < no_fly.y_max))[0]
+        x = np.where((trajectory_[:, 0] > no_fly.x_min) & (trajectory_[:, 0] < no_fly.x_max))[0]
+        y = np.where((trajectory_[:, 1] > no_fly.y_min) & (trajectory_[:, 1] < no_fly.y_max))[0]
         count = find_same_num(x, y)
         if count:
             h_1 += count
-    h_2 = np.sum((trajectory[:, 0:2] > population.upper_bound) + (trajectory[:, 0:2] < population.lower_bound))
+    h_2 = np.sum((trajectory_[:, 0:2] > population.upper_bound) + (trajectory_[:, 0:2] < population.lower_bound))
 
     return 0.2 * f_1 + 0.1 * f_2 + 0.3 * f_3 + 0.3 * f_4 + 0.1 * f_5, \
            np.array([f_1, f_2, f_3, f_4, f_5]), np.array([g_1, g_2, g_3, h_1, h_2])
@@ -282,12 +290,35 @@ def binary_search(number, array_input):
         return binary_search(number, array_input[0:length_array])
 
 
+def plt_terrain(start_point, target_point, g_map, ax_3d):
+    if start_point[0] < target_point[0]:
+        begin_x = int(start_point[0])
+        end_x = int(target_point[0])
+    else:
+        begin_x = int(target_point[0])
+        end_x = int(start_point[0])
+    if start_point[1] < target_point[1]:
+        begin_y = int(start_point[1])
+        end_y = int(target_point[1])
+    else:
+        begin_y = int(target_point[1])
+        end_y = int(start_point[1])
+    x = np.arange(begin_x, end_x, 1)
+    y = np.arange(begin_y, end_y, 1)
+    x, y = np.meshgrid(x, y)
+    z = g_map.terrain.map(x, y)
+    ax_3d.plot_surface(x, y, z,
+                       rstride=2, cstride=2,
+                       cmap=plt.get_cmap('rainbow'),
+                       alpha=1,
+                       edgecolors=[0, 0, 0])
+
+
 def test_map(num_1, num_2, num_3):
     temp_ = terrain.generate_map()[0]
-    terra = Terr(temp_)
+    terra = mapconstraint.Terr(temp_)
     missile_, radar_, nfz_ = mapconstraint.generate_constraint(num_1, num_2, num_3, terra.points)
-    g_map = Map(terra, missile_, radar_, nfz_)
+    g_map = mapconstraint.Map(terra, missile_, radar_, nfz_)
     return g_map
-
 
 

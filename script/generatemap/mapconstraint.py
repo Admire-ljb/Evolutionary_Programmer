@@ -1,4 +1,35 @@
 from numpy import random
+import numpy as np
+
+class Terr:
+    def __init__(self, points):
+        self.points = np.array(points)
+        temp = points[0][0]
+        count = 0
+        for i in points:
+            if i[0] == temp:
+                count += 1
+            else:
+                break
+        self.length = count
+        self.width = len(points) // count
+
+    def map(self, x_index, y_index):
+        index = x_index * self.length + y_index
+        s = 0
+        try:
+            s = self.points[index, 2]
+        except IndexError:
+            pass
+        return s
+
+
+class Map:
+    def __init__(self, terr, missile, radar, nfz):
+        self.terrain = terr
+        self.missile = missile
+        self.radar = radar
+        self.nfz = nfz
 
 
 class Missile:

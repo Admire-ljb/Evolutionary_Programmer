@@ -213,7 +213,7 @@ def parameterize(data_points, degree, type_='chord'):
     :param type_:
     :return:
     """
-    print("{} parameterization of data points".format(type_))
+    # print("{} parameterization of data points".format(type_))
 
     n = len(data_points)
     t = [0.] * n
