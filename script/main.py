@@ -134,6 +134,10 @@ def test_population(start_, goal_, g_map, genome):
     ax_ = Axes3D(figure)
     plt_fig(p_.individuals[0].trajectory, ax_)
     plt_terrain(p_.start, p_.goal, p_.global_map, ax_)
+    #TODO
+    # plt_missile()
+    # plt_nfz()
+    # plt_radar()
     return p_
 
 

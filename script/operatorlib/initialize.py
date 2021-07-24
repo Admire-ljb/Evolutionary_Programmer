@@ -291,6 +291,7 @@ def binary_search(number, array_input):
 def  plt_missile(start_point, target_point, g_map, ax_3d):
     return
 
+
 def plt_terrain(start_point, target_point, g_map, ax_3d):
     if start_point[0] < target_point[0]:
         begin_x = int(start_point[0]) - 2
