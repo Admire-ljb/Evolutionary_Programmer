@@ -1,6 +1,8 @@
 from initialize import *
 from sort_selection import *
 from exploitation_exploration import *
+from decoder import SoftInformation
+import time
 
 
 class Population:
@@ -24,7 +26,7 @@ class Population:
         self.generation = 0
         self.sort_cache = 0
         self.selection_cache = 0
-        self.data = np.array([initialize(g_map, self.num_cp, start, self.goal_r)
+        self.data = np.array([initialize(g_map, self.num_cp, start, self.goal_r, self.rotation_matrix)
                               for x in range(self.num_individual)])
         self.velocity = np.zeros(self.data.shape)
         self.p_best = self.data.copy()
@@ -51,7 +53,7 @@ class Population:
         self.data = np.concatenate((data, data_pre))
         individuals = instantiation(self, self.data)
         if self.soft_inf.exploit == "pso_exploit":
-            for x in range(individuals.size):
+            for x in range(self.num_individual):
                 if self.sort(np.array([individuals[x], self.individuals[x]]))[0] == 0:
                     self.p_best[x] = self.data[x].copy()
         self.individuals = individuals
@@ -90,6 +92,7 @@ class Population:
             variants = self.exploration(off_spring)
             self.update_generation(variants)
         self.generation = 0
+
 
 def test_population(g_map):
     # t0 = time.clock()

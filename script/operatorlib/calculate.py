@@ -1,10 +1,10 @@
 import numpy as np
 from scipy.special import comb
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib
-from matplotlib import cm
-from matplotlib.ticker import LinearLocator, FixedLocator, FormatStrFormatter
-import matplotlib.pyplot as plt
+# from mpl_toolkits.mplot3d import Axes3D
+# import matplotlib
+# from matplotlib import cm
+# from matplotlib.ticker import LinearLocator, FixedLocator, FormatStrFormatter
+# import matplotlib.pyplot as plt
 
 
 def euclidean_distance(d1, d2):
@@ -442,6 +442,6 @@ def plt_fig(points, ax, describe=None):
     X =[points[i][0] for i in range(l)]
     Y =[points[i][1] for i in range(l)]
     Z =[points[i][2] for i in range(l)]
-    ax.plot(X, Y, Z, alpha=1)
+    ax.plot(X, Y, Z, alpha=1, linewidth=2)
     inx = np.random.randint(0, l)
     ax.text(X[inx], Y[inx], Z[inx], describe, fontsize=15)

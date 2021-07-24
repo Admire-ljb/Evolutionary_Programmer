@@ -1,11 +1,10 @@
 import random
 from calculate import *
-import time
-from main import *
-from decoder import *
-from generatemap import terrain
+# import time
+# from decoder import *
+from generatemap.terrain import *
 from generatemap import mapconstraint
-
+import matplotlib.pyplot as plt
 
 class Individual:
     def __init__(self, pop, control_points=None):
@@ -98,7 +97,7 @@ def tangent_circle_curve(control_points, n):
     return bezier_curve(control_points, n)
 
 
-def initialize(g_map, num_cp, start, goal_r):
+def initialize(g_map, num_cp, start, goal_r, matrix):
     """
     initialize the control_points
     """
@@ -107,7 +106,7 @@ def initialize(g_map, num_cp, start, goal_r):
     start_r = [0, 0, start[2]]
     points.append(start_r)
     delta_l = goal_r[0] / (num_cp - 1)
-    current_terr = g_map.terrain.map(0, 0)
+    current_terr = g_map.terrain.map(start[0], start[1])
     for i in range(1, num_cp-1):
         temp_cp = list()
         temp_cp.append(delta_l * i)
@@ -115,9 +114,9 @@ def initialize(g_map, num_cp, start, goal_r):
         if i == 1:
             temp_cp.append(points[0][2] + safe_height)
         else:
-
             pre_terr = current_terr
-            current_terr = g_map.terrain.map(int(temp_cp[0]), int(temp_cp[1]))
+            temp_cp_origin = np.dot(np.array([temp_cp[0], temp_cp[1], 0]), matrix) + [start[0], start[1], 0]
+            current_terr = g_map.terrain.map(int(temp_cp_origin[0]), int(temp_cp_origin[1]))
 
             temp_cp.append(np.random.normal(current_terr + max(points[i-1][2] - pre_terr, safe_height), delta_l / 3))
         points.append(temp_cp)
@@ -289,33 +288,41 @@ def binary_search(number, array_input):
     else:
         return binary_search(number, array_input[0:length_array])
 
+def  plt_missile(start_point, target_point, g_map, ax_3d):
+    return
 
 def plt_terrain(start_point, target_point, g_map, ax_3d):
     if start_point[0] < target_point[0]:
-        begin_x = int(start_point[0])
-        end_x = int(target_point[0])
+        begin_x = int(start_point[0]) - 2
+        end_x = int(target_point[0]) + 2
     else:
-        begin_x = int(target_point[0])
-        end_x = int(start_point[0])
+        begin_x = int(target_point[0]) - 2
+        end_x = int(start_point[0]) + 2
     if start_point[1] < target_point[1]:
-        begin_y = int(start_point[1])
-        end_y = int(target_point[1])
+        begin_y = int(start_point[1]) - 2
+        end_y = int(target_point[1]) + 2
     else:
-        begin_y = int(target_point[1])
-        end_y = int(start_point[1])
+        begin_y = int(target_point[1]) - 2
+        end_y = int(start_point[1]) + 2
     x = np.arange(begin_x, end_x, 1)
     y = np.arange(begin_y, end_y, 1)
     x, y = np.meshgrid(x, y)
     z = g_map.terrain.map(x, y)
+    # ax_3d.plot_surface(x, y, z,
+    #                    rstride=2, cstride=2,
+    #                    cmap=plt.get_cmap('rainbow'),
+    #                    alpha=1,
+    #                    edgecolors=[0, 0, 0])
     ax_3d.plot_surface(x, y, z,
                        rstride=2, cstride=2,
                        cmap=plt.get_cmap('rainbow'),
-                       alpha=1,
+                       alpha=0.1,
                        edgecolors=[0, 0, 0])
+    plt_missile(start_point, target_point, g_map, ax_3d)
 
 
 def test_map(num_1, num_2, num_3):
-    temp_ = terrain.generate_map()[0]
+    temp_ = generate_map()[0]
     terra = mapconstraint.Terr(temp_)
     missile_, radar_, nfz_ = mapconstraint.generate_constraint(num_1, num_2, num_3, terra.points)
     g_map = mapconstraint.Map(terra, missile_, radar_, nfz_)

@@ -4,10 +4,10 @@ import math
 import pcl
 import numpy as np
 # from pcl import pcl_visualization
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.ticker import LinearLocator, FixedLocator, FormatStrFormatter
-from matplotlib import cm
+# import matplotlib.pyplot as plt
+# from mpl_toolkits.mplot3d import Axes3D
+# from matplotlib.ticker import LinearLocator, FixedLocator, FormatStrFormatter
+# from matplotlib import cm
 
 ############ Display variables
 
@@ -29,9 +29,10 @@ n1scale = 20 # landmass height
 n2scale = 2 # boulder scale
 n3scale = 0.5 # rock scale
 
-noise1 = perlin.noise(width / n1div, length / n1div) # landmass / mountains
-noise2 = perlin.noise(width / n2div, length / n2div) # boulders
-noise3 = perlin.noise(width / n3div, length / n3div) # rocks
+noise1 = perlin.noise(width / n1div, length / n1div)  # landmass / mountains
+noise2 = perlin.noise(width / n2div, length / n2div)  # boulders
+noise3 = perlin.noise(width / n3div, length / n3div)  # rocks
+
 
 ############ z modifiers
 
@@ -80,75 +81,75 @@ def generate_map():
         point[i][2] -= Z_min
     return point, points
 
-
-def plt_fig(points, ax, missile=[], radar=[], nfz=[]):
-    # 3d fig
-    X =[points[i][0] for i in range(15000)]
-    Y =[points[i][1] for i in range(15000)]
-    Z =[points[i][2] for i in range(15000)]
-
-    X = np.array(X)
-    X = X.reshape(150, 100)
-    Y = np.array(Y)
-    Y = Y.reshape(150, 100)
-    Z = np.array(Z)
-    Z = Z.reshape(150, 100)
-
-    # Create cubic bounding box to simulate equal aspect ratio
-    max_range = np.array([X.max() - X.min(), Y.max() - Y.min(), Z.max() - Z.min()]).max()
-    Xb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][0].flatten() + 0.5 * (X.max() + X.min())
-    Yb = 0.5 * (Y.max() - Y.min()) * np.mgrid[-1:2:2, -1:2:2, -1:2:2][1].flatten() + 0.5 * (Y.max() + Y.min())
-    Zb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][2].flatten() + 0.5 * (Z.max() + Z.min())
-    # Comment or uncomment following both lines to test the fake bounding box:
-    for xb, yb, zb in zip(Xb, Yb, Zb):
-        ax.plot([xb], [yb], [zb], 'w')
-
-    '''cmap是颜色映射表
-    from matplotlib import cm
-    ax.plot_surface(X, Y, Z, rstride = 1, cstride = 1, cmap = cm.coolwarm)
-    cmap = "rainbow" 亦可
-    我的理解的 改变cmap参数可以控制三维曲面的颜色组合, 一般我们见到的三维曲面就是 rainbow 的
-    你也可以修改 rainbow 为 coolwarm, 验证我的结论'''
-    surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
-                           linewidth=0, antialiased=False)
-    ax.w_zaxis.set_major_locator(LinearLocator(10))
-    ax.w_zaxis.set_major_formatter(FormatStrFormatter('%.0f'))
-    # fig.colorbar(surf, shrink=0.5, aspect=5)
-    # plt.switch_backend('agg')
-    for i in range(len(missile)):
-        # ax2 = fig.gca(projection='3d')
-        # ax2.set_aspect("equal")
-
-        # draw sphere
-        u, v = np.mgrid[0:2 * np.pi:20j, 0:np.pi:10j]
-        x = missile[i].radius * np.cos(u) * np.sin(v) + missile[i].center[0]
-        y = missile[i].radius * np.sin(u) * np.sin(v) + missile[i].center[1]
-        z = np.cos(v) + missile[i].center[2]
-        ax.plot_wireframe(x, y, z, color="r")
-    # ax.set_zlim(Z.min()-10, Z.max() + 10)
-
-
-def constraint_plt(missile, radar, nfz, fig):
-    ax = fig.gca(projection='3d')
-    for i in range(len(missile)):
-        # draw sphere
-        u, v = np.mgrid[0: 2*np.pi:40j, 0:1/2 * np.pi:40j]
-        x = missile[i].radius * np.cos(u) * np.sin(v) + missile[i].center[0]
-        y = missile[i].radius * np.sin(u) * np.sin(v) + missile[i].center[1]
-        z = missile[i].radius * np.cos(v) + missile[i].center[2]
-        ax.plot_surface(x, y, z, color="r")
-        # # Create cubic bounding box to simulate equal aspect ratio
-        # max_range = np.array([x.max() - x.min(), y.max() - y.min(), z.max() - z.min()]).max()
-        # Xb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][0].flatten() + 0.5 * (x.max() + x.min())
-        # Yb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][1].flatten() + 0.5 * (y.max() + y.min())
-        # Zb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][2].flatten() + 0.5 * (z.max() + z.min())
-        # # Comment or uncomment following both lines to test the fake bounding box:
-        # for xb, yb, zb in zip(Xb, Yb, Zb):
-        #     ax.plot([xb], [yb], [zb], 'w')
+#
+# def plt_fig(points, ax, missile=[], radar=[], nfz=[]):
+#     # 3d fig
+#     X =[points[i][0] for i in range(15000)]
+#     Y =[points[i][1] for i in range(15000)]
+#     Z =[points[i][2] for i in range(15000)]
+#
+#     X = np.array(X)
+#     X = X.reshape(150, 100)
+#     Y = np.array(Y)
+#     Y = Y.reshape(150, 100)
+#     Z = np.array(Z)
+#     Z = Z.reshape(150, 100)
+#
+#     # Create cubic bounding box to simulate equal aspect ratio
+#     max_range = np.array([X.max() - X.min(), Y.max() - Y.min(), Z.max() - Z.min()]).max()
+#     Xb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][0].flatten() + 0.5 * (X.max() + X.min())
+#     Yb = 0.5 * (Y.max() - Y.min()) * np.mgrid[-1:2:2, -1:2:2, -1:2:2][1].flatten() + 0.5 * (Y.max() + Y.min())
+#     Zb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][2].flatten() + 0.5 * (Z.max() + Z.min())
+#     # Comment or uncomment following both lines to test the fake bounding box:
+#     for xb, yb, zb in zip(Xb, Yb, Zb):
+#         ax.plot([xb], [yb], [zb], 'w')
+#
+#     '''cmap是颜色映射表
+#     from matplotlib import cm
+#     ax.plot_surface(X, Y, Z, rstride = 1, cstride = 1, cmap = cm.coolwarm)
+#     cmap = "rainbow" 亦可
+#     我的理解的 改变cmap参数可以控制三维曲面的颜色组合, 一般我们见到的三维曲面就是 rainbow 的
+#     你也可以修改 rainbow 为 coolwarm, 验证我的结论'''
+#     surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
+#                            linewidth=0, antialiased=False)
+#     ax.w_zaxis.set_major_locator(LinearLocator(10))
+#     ax.w_zaxis.set_major_formatter(FormatStrFormatter('%.0f'))
+#     # fig.colorbar(surf, shrink=0.5, aspect=5)
+#     # plt.switch_backend('agg')
+#     for i in range(len(missile)):
+#         # ax2 = fig.gca(projection='3d')
+#         # ax2.set_aspect("equal")
+#
+#         # draw sphere
+#         u, v = np.mgrid[0:2 * np.pi:20j, 0:np.pi:10j]
+#         x = missile[i].radius * np.cos(u) * np.sin(v) + missile[i].center[0]
+#         y = missile[i].radius * np.sin(u) * np.sin(v) + missile[i].center[1]
+#         z = np.cos(v) + missile[i].center[2]
+#         ax.plot_wireframe(x, y, z, color="r")
+#     # ax.set_zlim(Z.min()-10, Z.max() + 10)
 
 
-
-    # ax_3d.contour(x, y, z, zdir='z', offset=-1, camp='rainbow')
+# def constraint_plt(missile, radar, nfz, fig):
+#     ax = fig.gca(projection='3d')
+#     for i in range(len(missile)):
+#         # draw sphere
+#         u, v = np.mgrid[0: 2*np.pi:40j, 0:1/2 * np.pi:40j]
+#         x = missile[i].radius * np.cos(u) * np.sin(v) + missile[i].center[0]
+#         y = missile[i].radius * np.sin(u) * np.sin(v) + missile[i].center[1]
+#         z = missile[i].radius * np.cos(v) + missile[i].center[2]
+#         ax.plot_surface(x, y, z, color="r")
+#         # # Create cubic bounding box to simulate equal aspect ratio
+#         # max_range = np.array([x.max() - x.min(), y.max() - y.min(), z.max() - z.min()]).max()
+#         # Xb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][0].flatten() + 0.5 * (x.max() + x.min())
+#         # Yb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][1].flatten() + 0.5 * (y.max() + y.min())
+#         # Zb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][2].flatten() + 0.5 * (z.max() + z.min())
+#         # # Comment or uncomment following both lines to test the fake bounding box:
+#         # for xb, yb, zb in zip(Xb, Yb, Zb):
+#         #     ax.plot([xb], [yb], [zb], 'w')
+#
+#
+#
+#     # ax_3d.contour(x, y, z, zdir='z', offset=-1, camp='rainbow')
 
 
 if __name__ == "__main__":
@@ -172,17 +173,17 @@ if __name__ == "__main__":
 
     p = pcl.PointCloud(np.array(points, dtype=np.float32))
 
-    viewer = pcl.pcl_visualization.PCLVisualizering(b'cloud')
-    viewer.AddPointCloud(p)
-    v = True
-    while v:
-        v = not (viewer.WasStopped())
-        viewer.SpinOnce()
-
-    world.render()
-    world.screen.window.mainloop()
-    # fig define!
-    fig = plt.figure()
-    ax = Axes3D()
-    plt_fig(point, ax)
+    # viewer = pcl.pcl_visualization.PCLVisualizering(b'cloud')
+    # viewer.AddPointCloud(p)
+    # v = True
+    # while v:
+    #     v = not (viewer.WasStopped())
+    #     viewer.SpinOnce()
+    #
+    # world.render()
+    # world.screen.window.mainloop()
+    # # fig define!
+    # fig = plt.figure()
+    # ax = Axes3D()
+    # plt_fig(point, ax)
 
