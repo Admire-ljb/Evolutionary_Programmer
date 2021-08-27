@@ -130,14 +130,6 @@ def test_population(start_, goal_, g_map, genome):
     p_ = Population(start_, goal_, g_map, SoftInformation(genome))
     # p = Population(start, goal, global_map, SoftInformation(genomes[0]))
     p_.evolve(print_=1)
-    figure = plt.figure()
-    ax_ = Axes3D(figure)
-    plt_fig(p_.individuals[0].trajectory, ax_)
-    plt_terrain(p_.start, p_.goal, p_.global_map, ax_)
-    #TODO
-    # plt_missile()
-    # plt_nfz()
-    # plt_radar()
     return p_
 
 
@@ -159,7 +151,7 @@ def load_data(file_name):
 
 
 if __name__ == "__main__":
-    global_map = test_map(0,0 ,0)
+    global_map = test_map(1, 1, 1)
     genome_a = '0000011000' \
                '0000000000' \
                '0000000000' \
@@ -175,10 +167,16 @@ if __name__ == "__main__":
     genomes = rd_genomes(10, genome_a)
     start = np.array([0, 0, global_map.terrain.map(0, 0)])
     goal = np.array([50, 50, global_map.terrain.map(50, 50)])
+    figure = plt.figure()
+    ax_ = Axes3D(figure)
+    plt_terrain(start, goal, global_map, ax_)
     p_1 = test_population(start, goal, global_map, genome_a)
-    soft_cluster = SoftwareCluster(genomes, start, goal, global_map, e_t=3, time_limit=60)
-    soft_cluster.evolve(print_=1)
-    p_2 = test_population(start, goal, global_map, soft_cluster.genomes[0])
+    plt_trajectory(p_1.individuals[0].trajectory, ax_, label="origin", color='m', marker='s', linestyle=':')
+    # soft_cluster = SoftwareCluster(genomes, start, goal, global_map, e_t=3, time_limit=60)
+    # soft_cluster.evolve(print_=1)
+    # p_2 = test_population(start, goal, global_map, soft_cluster.genomes[0])
+    # plt_trajectory(p_2.individuals[0].trajectory, ax_, "evolved")
+
 
     # fig = plt.figure()
     # plt.plot([p.individuals[i].fitness_wight_factor for i in range(len(p.data))])

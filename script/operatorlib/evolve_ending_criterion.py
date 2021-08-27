@@ -97,5 +97,5 @@ if __name__ == "__main__":
     print(time.clock() - a)
     fig = plt.figure()
     ax = Axes3D(fig)
-    plt_fig(result.trajectory, ax)
+    plt_trajectory(result.trajectory, ax)
     plt_terrain(start, goal, global_map, ax)

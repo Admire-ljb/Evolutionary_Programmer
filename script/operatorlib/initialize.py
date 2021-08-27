@@ -5,6 +5,13 @@ from calculate import *
 from generatemap.terrain import *
 from generatemap import mapconstraint
 import matplotlib.pyplot as plt
+from matplotlib import cbook
+from matplotlib import cm
+from matplotlib.colors import LightSource
+import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
+from osgeo import gdal
+from mpl_toolkits.mplot3d import axes3d
 
 class Individual:
     def __init__(self, pop, control_points=None):
@@ -288,7 +295,38 @@ def binary_search(number, array_input):
     else:
         return binary_search(number, array_input[0:length_array])
 
-def  plt_missile(start_point, target_point, g_map, ax_3d):
+
+def in_zone(point_, start, end):
+    if start[0] > point_[0] > end[0] or start[0] < point_[0] < end[0]:
+        if start[1] > point_[1] > end[1] or start[1] < point_[1] < end[1]:
+            return True
+    return False
+
+def plt_missile(start_point, target_point, g_map, ax_3d):
+    # Grab some test data.
+    # g_map.missle
+    # x = np.arange(begin_x, end_x, 1)
+    # y = np.arange(begin_y, end_y, 1)
+    # x, y = np.meshgrid(x, y)
+    # z = g_map.terrain.map(x, y)
+    # z_max = z.max()
+    start = np.array([start_point[0], start_point[1]])
+    end = np.array([target_point[0], target_point[1]])
+    for each in g_map.missile:
+        center = np.array(each.center[0:2])
+        flag = 0
+        if not in_zone(center, start, end):
+            flag = -1
+            if
+
+
+
+
+
+    # Plot a basic wireframe.
+    ax_3d.plot_wireframe(X, Y, Z, rstride=10, cstride=10)
+
+    plt.show()
     return
 
 
@@ -309,16 +347,36 @@ def plt_terrain(start_point, target_point, g_map, ax_3d):
     y = np.arange(begin_y, end_y, 1)
     x, y = np.meshgrid(x, y)
     z = g_map.terrain.map(x, y)
+    z_max = z.max()
     # ax_3d.plot_surface(x, y, z,
     #                    rstride=2, cstride=2,
     #                    cmap=plt.get_cmap('rainbow'),
     #                    alpha=1,
     #                    edgecolors=[0, 0, 0])
-    ax_3d.plot_surface(x, y, z,
-                       rstride=2, cstride=2,
-                       cmap=plt.get_cmap('rainbow'),
-                       alpha=0.1,
-                       edgecolors=[0, 0, 0])
+    # ax_3d.plot_surface(x, y, z,
+    #                    rstride=2, cstride=2,
+    #                    cmap=plt.get_cmap('rainbow'),
+    #                    alpha=0.1,
+    #                    edgecolors=[0, 0, 0])
+
+    ls = LightSource(270, 20)
+    # To use a custom hillshading mode, override the built-in shading and pass
+    # in the rgb colors of the shaded surface calculated from "shade".
+    rgb = ls.shade(z, cmap=cm.gist_earth, vert_exag=0.1, blend_mode='soft')
+    surf = ax_3d.plot_surface(x, y, z, rstride=1, cstride=1, facecolors=rgb,
+                           linewidth=1, antialiased=False, shade=False, zorder=0)
+    x_range = []
+    y_range = []
+    z_range = []
+    for each in range(int(begin_x/10) * 10 + 10, end_x, 10):
+        x_range.append(each)
+    for each in range(int(begin_y/ 10) * 10 + 10, end_y, 10):
+        y_range.append(each)
+    for each in range(0, int(z_max), 10):
+        z_range.append(each)
+    ax_3d.set_xticks(x_range)
+    ax_3d.set_yticks(y_range)
+    ax_3d.set_zticks(z_range)
     plt_missile(start_point, target_point, g_map, ax_3d)
 
 
