@@ -150,8 +150,25 @@ def load_data(file_name):
     return data_name
 
 
+class Trajectory:
+    def __init__(self, points, label, color, marker, linestype):
+        self.points = points
+        self.label = label
+        self.color = color
+        self.marker = marker
+        self.linestyle = linestype
+
+
+def plt_3d_fig(start_, goal_, g_map, trajectories):
+    figure = plt.figure()
+    ax_ = Axes3D(figure)
+    plt_terrain(start_, goal_, g_map, ax_)
+    for each in trajectories:
+        plt_trajectory(each.points, ax_, label=each.label, color=each.color, marker=each.marker, linestyle=each.linestyle)
+
+
 if __name__ == "__main__":
-    global_map = test_map(1, 1, 1)
+    global_map = test_map(5, 5, 5)
     genome_a = '0000011000' \
                '0000000000' \
                '0000000000' \
@@ -164,14 +181,14 @@ if __name__ == "__main__":
     # goal = np.array([50, 50, global_map.terrain.map(50, 50)])
     # p = Population(start, goal, global_map, SoftInformation(genome_b))
     # p.evolve(print_=1)
+    trajectories = []
     genomes = rd_genomes(10, genome_a)
     start = np.array([0, 0, global_map.terrain.map(0, 0)])
-    goal = np.array([50, 50, global_map.terrain.map(50, 50)])
-    figure = plt.figure()
-    ax_ = Axes3D(figure)
-    plt_terrain(start, goal, global_map, ax_)
+    goal = np.array([100, 100, global_map.terrain.map(100, 100)])
     p_1 = test_population(start, goal, global_map, genome_a)
-    plt_trajectory(p_1.individuals[0].trajectory, ax_, label="origin", color='m', marker='s', linestyle=':')
+    s = Trajectory(p_1.individuals[0].trajectory, "origin", "m", "s", ":")
+    trajectories.append(s)
+    plt_3d_fig(start, goal, global_map, trajectories)
     # soft_cluster = SoftwareCluster(genomes, start, goal, global_map, e_t=3, time_limit=60)
     # soft_cluster.evolve(print_=1)
     # p_2 = test_population(start, goal, global_map, soft_cluster.genomes[0])

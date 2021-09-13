@@ -442,6 +442,6 @@ def plt_trajectory(points, ax, label=None, color=None, linestyle=None, marker=No
     X =[points[i][0] for i in range(l)]
     Y =[points[i][1] for i in range(l)]
     Z =[points[i][2] for i in range(l)]
-    ax.plot(X, Y, Z, alpha=1, linewidth=1, label=label, color=color, linestyle=linestyle, marker=marker, zorder=10)
+    ax.plot(X, Y, Z, alpha=1, linewidth=1, label=label, color=color, linestyle=linestyle, marker=marker, zorder=20)
     inx = np.random.randint(0, l)
     ax.text(X[inx], Y[inx], Z[inx], describe, fontsize=15)

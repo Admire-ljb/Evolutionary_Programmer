@@ -302,6 +302,7 @@ def in_zone(point_, start, end):
             return True
     return False
 
+
 def plt_missile(start_point, target_point, g_map, ax_3d):
     # Grab some test data.
     # g_map.missle
@@ -314,18 +315,13 @@ def plt_missile(start_point, target_point, g_map, ax_3d):
     end = np.array([target_point[0], target_point[1]])
     for each in g_map.missile:
         center = np.array(each.center[0:2])
-        flag = 0
-        if not in_zone(center, start, end):
-            flag = -1
-            if
-
-
-
-
-
-    # Plot a basic wireframe.
-    ax_3d.plot_wireframe(X, Y, Z, rstride=10, cstride=10)
-
+        if in_zone(center, start, end):
+            u = np.linspace(0, 2 * np.pi, 100)
+            v = np.linspace(0, np.pi/2, 100)
+            x = 10 * np.outer(np.cos(u), np.sin(v)) + each.center[0]
+            y = 10 * np.outer(np.sin(u), np.sin(v)) + each.center[1]
+            z = 10 * np.outer(np.ones(np.size(u)), np.cos(v)) + each.center[2]
+            ax_3d.plot_wireframe(x, y, z, rstride=10, cstride=10, zorder=10, color='c')
     plt.show()
     return
 
@@ -363,8 +359,12 @@ def plt_terrain(start_point, target_point, g_map, ax_3d):
     # To use a custom hillshading mode, override the built-in shading and pass
     # in the rgb colors of the shaded surface calculated from "shade".
     rgb = ls.shade(z, cmap=cm.gist_earth, vert_exag=0.1, blend_mode='soft')
-    surf = ax_3d.plot_surface(x, y, z, rstride=1, cstride=1, facecolors=rgb,
+    surf = ax_3d.plot_surface(x, y, z, rstride=2, cstride=2, facecolors=rgb,
                            linewidth=1, antialiased=False, shade=False, zorder=0)
+   # ax_3d.contour(x, y, z, zdim='z', offset=-2, cmap = 'rainbow')
+    # cset = ax_3d.contour(x, y, z, zdir='y', offset=3, cmap='binary')
+    # cset = ax_3d.contour(x, y, z, zdir='x', offset=-3, cmap='Blues')
+
     x_range = []
     y_range = []
     z_range = []
