@@ -325,8 +325,7 @@ def plt_missile(start_point, target_point, g_map, ax_3d):
     plt.show()
     return
 
-
-def plt_terrain(start_point, target_point, g_map, ax_3d):
+def get_plt_x_y_z(start_point, target_point, g_map):
     if start_point[0] < target_point[0]:
         begin_x = int(start_point[0]) - 2
         end_x = int(target_point[0]) + 2
@@ -343,6 +342,11 @@ def plt_terrain(start_point, target_point, g_map, ax_3d):
     y = np.arange(begin_y, end_y, 1)
     x, y = np.meshgrid(x, y)
     z = g_map.terrain.map(x, y)
+    return begin_x, end_x, begin_y, end_y, x, y, z
+
+
+def plt_terrain(start_point, target_point, g_map, ax_3d):
+    begin_x, end_x, begin_y, end_y, x, y, z = get_plt_x_y_z(start_point, target_point, g_map)
     z_max = z.max()
     # ax_3d.plot_surface(x, y, z,
     #                    rstride=2, cstride=2,
@@ -359,12 +363,11 @@ def plt_terrain(start_point, target_point, g_map, ax_3d):
     # To use a custom hillshading mode, override the built-in shading and pass
     # in the rgb colors of the shaded surface calculated from "shade".
     rgb = ls.shade(z, cmap=cm.gist_earth, vert_exag=0.1, blend_mode='soft')
-    surf = ax_3d.plot_surface(x, y, z, rstride=2, cstride=2, facecolors=rgb,
+    surf = ax_3d.plot_surface(x, y, z, rstride=1, cstride=1, facecolors=rgb,
                            linewidth=1, antialiased=False, shade=False, zorder=0)
    # ax_3d.contour(x, y, z, zdim='z', offset=-2, cmap = 'rainbow')
     # cset = ax_3d.contour(x, y, z, zdir='y', offset=3, cmap='binary')
     # cset = ax_3d.contour(x, y, z, zdir='x', offset=-3, cmap='Blues')
-
     x_range = []
     y_range = []
     z_range = []
@@ -380,11 +383,15 @@ def plt_terrain(start_point, target_point, g_map, ax_3d):
     plt_missile(start_point, target_point, g_map, ax_3d)
 
 
-def test_map(num_1, num_2, num_3):
+def test_map():
     temp_ = generate_map()[0]
     terra = mapconstraint.Terr(temp_)
-    missile_, radar_, nfz_ = mapconstraint.generate_constraint(num_1, num_2, num_3, terra.points)
+    missile_, radar_, nfz_ = mapconstraint.generate_constraint(0, 0, 0, terra.points)
     g_map = mapconstraint.Map(terra, missile_, radar_, nfz_)
     return g_map
 
+
+def generate_map_in_constrain(global_map, num_missile, num_radar, num_nfz):
+    missile_, radar_, nfz_ = mapconstraint.generate_constraint(num_missile, num_radar, num_nfz, global_map.terrain)
+    return mapconstraint.Map(global_map.terrain, missile_, radar_, nfz_)
 

@@ -6,6 +6,8 @@ from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import time
 
+line_types = ['-ob', '-or', '-oc', '']
+
 
 def fit(fitness_wight_factor, constraint, time_used, e_t, lambda_1, lambda_2):
 
@@ -49,9 +51,9 @@ class SoftwareCluster:
             cnt += 1
         for each in variants:
             temp = Population(self.start, self.end, self.map, SoftInformation(each))
-            t0 = time.clock()
+            t0 = time.time()
             temp.evolve(print_=0)
-            t = time.clock() - t0
+            t = time.time() - t0
             temp_fit = fit(temp.individuals[0].fitness_wight_factor, temp.individuals[0].constraint, t, self.e_t, 0.4, 0.6)
             genomes_tmp.append(each)
             fit_tmp.append(temp_fit)
@@ -62,10 +64,10 @@ class SoftwareCluster:
         self.fit = self.fit[0:self.num_genomes]
 
     def evolve(self, print_=0, elitism=0.1):
-        st = time.clock()
+        st = time.time()
         cnt = 0
         tmp = []
-        while time.clock() - st < self.time_limit:
+        while time.time() - st < self.time_limit:
             data_pre = self.genomes[0:int(elitism * self.genomes.size) + 1]
             if print_ == 1:
                 print("===============", cnt, "th evolve===============")
@@ -151,24 +153,41 @@ def load_data(file_name):
 
 
 class Trajectory:
-    def __init__(self, points, label, color, marker, linestype):
+    def __init__(self, points, line_style, label):
         self.points = points
+        self.linestyle = line_style
         self.label = label
-        self.color = color
-        self.marker = marker
-        self.linestyle = linestype
 
 
-def plt_3d_fig(start_, goal_, g_map, trajectories):
-    figure = plt.figure()
-    ax_ = Axes3D(figure)
-    plt_terrain(start_, goal_, g_map, ax_)
+def plt_3d_trajectories(ax_, trajectories):
     for each in trajectories:
-        plt_trajectory(each.points, ax_, label=each.label, color=each.color, marker=each.marker, linestyle=each.linestyle)
+        plt_trajectory(each, ax_)
+
+
+def plt_contour(start_point, target_point, g_map, routes):
+    # 建立步长为0.01，即每隔0.01取一个点
+    fig_1 = plt.figure()
+    begin_x, begin_y, end_x, end_y, x, y, z = get_plt_x_y_z(start_point, target_point, g_map)
+    plt.contour(x, y, z, 40)
+
+    cnt = 0
+    for each in routes:
+        points_ = each.points
+        l = len(points_)
+        x_tmp = [points_[i][0] for i in range(l)]
+        y_tmp = [points_[i][1] for i in range(l)]
+        plt.plot(x_tmp, y_tmp, each.linestyle, label=each.label)
+        cnt += 1
+    plt.show()
+
+
+def new_trajectory(trajectories, points, label):
+    s = Trajectory(points, line_types[len(trajectories)], label)
+    trajectories.append(s)
 
 
 if __name__ == "__main__":
-    global_map = test_map(5, 5, 5)
+    global_map = test_map()
     genome_a = '0000011000' \
                '0000000000' \
                '0000000000' \
@@ -186,14 +205,22 @@ if __name__ == "__main__":
     start = np.array([0, 0, global_map.terrain.map(0, 0)])
     goal = np.array([100, 100, global_map.terrain.map(100, 100)])
     p_1 = test_population(start, goal, global_map, genome_a)
-    s = Trajectory(p_1.individuals[0].trajectory, "origin", "m", "s", ":")
-    trajectories.append(s)
-    plt_3d_fig(start, goal, global_map, trajectories)
-    # soft_cluster = SoftwareCluster(genomes, start, goal, global_map, e_t=3, time_limit=60)
-    # soft_cluster.evolve(print_=1)
+    new_trajectory(trajectories, p_1.individuals[0].trajectory, "origin")
+
+
+    soft_cluster = SoftwareCluster(genomes, start, goal, global_map, e_t=3, time_limit=60)
+    soft_cluster.evolve(print_=1)
+    p_2 = test_population(start, goal, global_map, soft_cluster.genomes[0])
+    new_trajectory(trajectories, p_2.individuals[0].trajectory, 'evolved')
     # p_2 = test_population(start, goal, global_map, soft_cluster.genomes[0])
     # plt_trajectory(p_2.individuals[0].trajectory, ax_, "evolved")
 
+    # PLOT
+    figure = plt.figure()
+    ax_ = Axes3D(figure)
+    plt_terrain(start, goal, global_map, ax_)
+    plt_3d_trajectories(ax_, trajectories)
+    plt_contour(start, goal, global_map, trajectories)
 
     # fig = plt.figure()
     # plt.plot([p.individuals[i].fitness_wight_factor for i in range(len(p.data))])
