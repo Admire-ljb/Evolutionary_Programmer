@@ -4,10 +4,8 @@ from calculate import *
 # from decoder import *
 from generatemap.terrain import *
 from generatemap import mapconstraint
-import matplotlib.pyplot as plt
-from matplotlib import cbook
-from matplotlib import cm
-from matplotlib.colors import LightSource
+
+
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 from osgeo import gdal
@@ -296,91 +294,7 @@ def binary_search(number, array_input):
         return binary_search(number, array_input[0:length_array])
 
 
-def in_zone(point_, start, end):
-    if start[0] > point_[0] > end[0] or start[0] < point_[0] < end[0]:
-        if start[1] > point_[1] > end[1] or start[1] < point_[1] < end[1]:
-            return True
-    return False
 
-
-def plt_missile(start_point, target_point, g_map, ax_3d):
-    # Grab some test data.
-    # g_map.missle
-    # x = np.arange(begin_x, end_x, 1)
-    # y = np.arange(begin_y, end_y, 1)
-    # x, y = np.meshgrid(x, y)
-    # z = g_map.terrain.map(x, y)
-    # z_max = z.max()
-    start = np.array([start_point[0], start_point[1]])
-    end = np.array([target_point[0], target_point[1]])
-    for each in g_map.missile:
-        center = np.array(each.center[0:2])
-        if in_zone(center, start, end):
-            u = np.linspace(0, 2 * np.pi, 100)
-            v = np.linspace(0, np.pi/2, 100)
-            x = 10 * np.outer(np.cos(u), np.sin(v)) + each.center[0]
-            y = 10 * np.outer(np.sin(u), np.sin(v)) + each.center[1]
-            z = 10 * np.outer(np.ones(np.size(u)), np.cos(v)) + each.center[2]
-            ax_3d.plot_wireframe(x, y, z, rstride=10, cstride=10, zorder=10, color='c')
-    plt.show()
-    return
-
-def get_plt_x_y_z(start_point, target_point, g_map):
-    if start_point[0] < target_point[0]:
-        begin_x = int(start_point[0]) - 2
-        end_x = int(target_point[0]) + 2
-    else:
-        begin_x = int(target_point[0]) - 2
-        end_x = int(start_point[0]) + 2
-    if start_point[1] < target_point[1]:
-        begin_y = int(start_point[1]) - 2
-        end_y = int(target_point[1]) + 2
-    else:
-        begin_y = int(target_point[1]) - 2
-        end_y = int(start_point[1]) + 2
-    x = np.arange(begin_x, end_x, 1)
-    y = np.arange(begin_y, end_y, 1)
-    x, y = np.meshgrid(x, y)
-    z = g_map.terrain.map(x, y)
-    return begin_x, end_x, begin_y, end_y, x, y, z
-
-
-def plt_terrain(start_point, target_point, g_map, ax_3d):
-    begin_x, end_x, begin_y, end_y, x, y, z = get_plt_x_y_z(start_point, target_point, g_map)
-    z_max = z.max()
-    # ax_3d.plot_surface(x, y, z,
-    #                    rstride=2, cstride=2,
-    #                    cmap=plt.get_cmap('rainbow'),
-    #                    alpha=1,
-    #                    edgecolors=[0, 0, 0])
-    # ax_3d.plot_surface(x, y, z,
-    #                    rstride=2, cstride=2,
-    #                    cmap=plt.get_cmap('rainbow'),
-    #                    alpha=0.1,
-    #                    edgecolors=[0, 0, 0])
-
-    ls = LightSource(270, 20)
-    # To use a custom hillshading mode, override the built-in shading and pass
-    # in the rgb colors of the shaded surface calculated from "shade".
-    rgb = ls.shade(z, cmap=cm.gist_earth, vert_exag=0.1, blend_mode='soft')
-    surf = ax_3d.plot_surface(x, y, z, rstride=1, cstride=1, facecolors=rgb,
-                           linewidth=1, antialiased=False, shade=False, zorder=0)
-   # ax_3d.contour(x, y, z, zdim='z', offset=-2, cmap = 'rainbow')
-    # cset = ax_3d.contour(x, y, z, zdir='y', offset=3, cmap='binary')
-    # cset = ax_3d.contour(x, y, z, zdir='x', offset=-3, cmap='Blues')
-    x_range = []
-    y_range = []
-    z_range = []
-    for each in range(int(begin_x/10) * 10 + 10, end_x, 10):
-        x_range.append(each)
-    for each in range(int(begin_y/ 10) * 10 + 10, end_y, 10):
-        y_range.append(each)
-    for each in range(0, int(z_max), 10):
-        z_range.append(each)
-    ax_3d.set_xticks(x_range)
-    ax_3d.set_yticks(y_range)
-    ax_3d.set_zticks(z_range)
-    plt_missile(start_point, target_point, g_map, ax_3d)
 
 
 def test_map():
@@ -392,6 +306,8 @@ def test_map():
 
 
 def generate_map_in_constrain(global_map, num_missile, num_radar, num_nfz):
-    missile_, radar_, nfz_ = mapconstraint.generate_constraint(num_missile, num_radar, num_nfz, global_map.terrain)
-    return mapconstraint.Map(global_map.terrain, missile_, radar_, nfz_)
+    missile_, radar_, nfz_ = mapconstraint.generate_constraint(num_missile, num_radar, num_nfz, global_map.terrain.points)
+    global_map.missile = missile_
+    global_map.radar = radar_
+    global_map.nfz = nfz_
 

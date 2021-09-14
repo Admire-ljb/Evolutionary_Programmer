@@ -437,15 +437,3 @@ def y_boundary(population, g_map):
     return max(max(y_upper), 0) + delta_d, min(min(y_lower), 0) - delta_d
 
 
-def plt_trajectory(trajectory, ax):
-    # 3d fig
-
-    l = len(trajectory.points)
-    X = [trajectory.points[i][0] for i in range(l)]
-    Y = [trajectory.points[i][1] for i in range(l)]
-    Z = [trajectory.points[i][2] for i in range(l)]
-    ax.plot(X, Y, Z, trajectory.linestyle, alpha=1, linewidth=1, label=trajectory.label, zorder=20)
-    #ax.plot(X, Y, Z, alpha=1, linewidth=1, label=label, color=color, linestyle=linestyle, marker=marker, zorder=20)
-    inx = np.random.randint(0, l)
-    #ax.text(X[inx], Y[inx], Z[inx], trajectory.describe, fontsize=15)
-    plt.legend()

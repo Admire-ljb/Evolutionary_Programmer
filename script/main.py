@@ -1,16 +1,11 @@
 from operatorlib.population import *
 from operatorlib.initialize import *
 from operatorlib.decoder import *
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import numpy as np
 import time
-
-line_types = ['-ob', '-or', '-oc', '']
+from figplot import *
 
 
 def fit(fitness_wight_factor, constraint, time_used, e_t, lambda_1, lambda_2):
-
     return fitness_wight_factor * lambda_1 + lambda_2 * time_used / e_t + np.sum(constraint > 0)
 
 
@@ -152,42 +147,9 @@ def load_data(file_name):
     return data_name
 
 
-class Trajectory:
-    def __init__(self, points, line_style, label):
-        self.points = points
-        self.linestyle = line_style
-        self.label = label
-
-
-def plt_3d_trajectories(ax_, trajectories):
-    for each in trajectories:
-        plt_trajectory(each, ax_)
-
-
-def plt_contour(start_point, target_point, g_map, routes):
-    # 建立步长为0.01，即每隔0.01取一个点
-    fig_1 = plt.figure()
-    begin_x, begin_y, end_x, end_y, x, y, z = get_plt_x_y_z(start_point, target_point, g_map)
-    plt.contour(x, y, z, 40)
-
-    cnt = 0
-    for each in routes:
-        points_ = each.points
-        l = len(points_)
-        x_tmp = [points_[i][0] for i in range(l)]
-        y_tmp = [points_[i][1] for i in range(l)]
-        plt.plot(x_tmp, y_tmp, each.linestyle, label=each.label)
-        cnt += 1
-    plt.show()
-
-
-def new_trajectory(trajectories, points, label):
-    s = Trajectory(points, line_types[len(trajectories)], label)
-    trajectories.append(s)
-
-
 if __name__ == "__main__":
     global_map = test_map()
+    generate_map_in_constrain(global_map, 5, 5, 5)
     genome_a = '0000011000' \
                '0000000000' \
                '0000000000' \
@@ -202,19 +164,15 @@ if __name__ == "__main__":
     # p.evolve(print_=1)
     trajectories = []
     genomes = rd_genomes(10, genome_a)
-    start = np.array([0, 0, global_map.terrain.map(0, 0)])
-    goal = np.array([100, 100, global_map.terrain.map(100, 100)])
+    start = np.array([10, 10, global_map.terrain.map(10, 10)])
+    goal = np.array([100, 70, global_map.terrain.map(100, 70)])
     p_1 = test_population(start, goal, global_map, genome_a)
     new_trajectory(trajectories, p_1.individuals[0].trajectory, "origin")
 
-
-    soft_cluster = SoftwareCluster(genomes, start, goal, global_map, e_t=3, time_limit=60)
-    soft_cluster.evolve(print_=1)
-    p_2 = test_population(start, goal, global_map, soft_cluster.genomes[0])
-    new_trajectory(trajectories, p_2.individuals[0].trajectory, 'evolved')
+    # soft_cluster = SoftwareCluster(genomes, start, goal, global_map, e_t=3, time_limit=60)
+    # soft_cluster.evolve(print_=1)
     # p_2 = test_population(start, goal, global_map, soft_cluster.genomes[0])
-    # plt_trajectory(p_2.individuals[0].trajectory, ax_, "evolved")
-
+    # new_trajectory(trajectories, p_2.individuals[0].trajectory, 'evolved')
     # PLOT
     figure = plt.figure()
     ax_ = Axes3D(figure)

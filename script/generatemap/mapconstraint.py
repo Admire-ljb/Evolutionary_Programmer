@@ -54,7 +54,7 @@ class NFZ:
 
 def generate_missile_or_radar(terrain, dtype="missile"):
     center = terrain[random.randint(len(terrain))]
-    radius = random.rand() * 20 + 10
+    radius = random.rand() * 10 + 2
     if dtype == "missile":
         obj = Missile(center, radius)
     else:
@@ -64,9 +64,9 @@ def generate_missile_or_radar(terrain, dtype="missile"):
 
 def generate_nfz(terrain):
     x_min = random.rand() * (terrain[-1][0]-30)
-    x_max = x_min + random.rand()*20 + 10
+    x_max = x_min + random.rand()*10 + 10
     y_min = random.rand() * (terrain[-1][1]-30)
-    y_max = y_min + random.rand()*20 + 10
+    y_max = y_min + random.rand()*10 + 10
     nfz = NFZ(x_min, x_max, y_min, y_max)
     return nfz
 
