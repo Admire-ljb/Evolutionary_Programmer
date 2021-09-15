@@ -68,10 +68,18 @@ class SoftwareCluster:
                 print("===============", cnt, "th evolve===============")
                 print("fit:", self.fit[0])
                 tmp.append(self.fit[0])
+
             off_spring = crossover(self.selection())
             variants = mutation(off_spring)
             self.update_generation(variants, data_pre)
+            trs = []
+            count = 1
+            for each in self.genomes:
+                p_ = test_population(self.start, self.end, self.map, soft_cluster.genomes[0])
+                trs.append(Trajectory(p_.individuals[0].trajectory, line_types[len(trs)], str(cnt) + '_' + str(count)))
+                count += 1
             cnt += 1
+            plt_contour(start, goal, global_map, trs)
         # x_ = np.linspace(0, cnt, 1)
         # y_ = np.array(tmp)
         # plt.figure()
@@ -149,7 +157,7 @@ def load_data(file_name):
 
 if __name__ == "__main__":
     global_map = test_map()
-    generate_map_in_constrain(global_map, 5, 5, 5)
+    generate_map_in_constrain(global_map, 0, 0, 0)
     genome_a = '0000011000' \
                '0000000000' \
                '0000000000' \
@@ -169,8 +177,8 @@ if __name__ == "__main__":
     p_1 = test_population(start, goal, global_map, genome_a)
     new_trajectory(trajectories, p_1.individuals[0].trajectory, "origin")
 
-    # soft_cluster = SoftwareCluster(genomes, start, goal, global_map, e_t=3, time_limit=60)
-    # soft_cluster.evolve(print_=1)
+    soft_cluster = SoftwareCluster(genomes, start, goal, global_map, e_t=3, time_limit=60)
+    soft_cluster.evolve(print_=1)
     # p_2 = test_population(start, goal, global_map, soft_cluster.genomes[0])
     # new_trajectory(trajectories, p_2.individuals[0].trajectory, 'evolved')
     # PLOT
