@@ -6,9 +6,11 @@ from calculate import euclidean_distance
 from mpl_toolkits.mplot3d import Axes3D
 from osgeo import gdal
 from mpl_toolkits.mplot3d import axes3d
+from matplotlib.font_manager import FontProperties
+plt.rcParams["font.family"] = "Times New Roman"
 
-
-line_types = ['-ob', '-or', '-oc', '-od', '-ow', '-^b', '-og', '-^r', '-^r', '-^r', '-^r', '-^r', '-^r', '-^r', '-^r', '-^r', '-^r', '-^r', '-^r', '-^r']
+line_types = ['-ob', '-^r', '-Pc', '-xk', '-sm', '-dy', '-<g', '->r', '-*r', '-Xr', '-hr', '-2r', '-+r', '-vr',
+              '-4r', '-1r', '-3r', '-5r', '-6r', '-7r', '-9r', '-_r']
 
 
 class Trajectory:
@@ -103,10 +105,13 @@ def plt_contour(start_point, target_point, g_map, routes):
         l = len(points_)
         x_tmp = [points_[i][0] for i in range(l)]
         y_tmp = [points_[i][1] for i in range(l)]
-        plt.plot(x_tmp, y_tmp, each.linestyle, label=each.label)
+        if len(each.linestyle) < 3:
+            plt.plot(x_tmp, y_tmp, each.linestyle, color='orange', label=each.label)
+        else:
+            plt.plot(x_tmp, y_tmp, each.linestyle, label=each.label)
         cnt += 1
-    plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
-               ncol=4, mode="expand", borderaxespad=0.)
+    # plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+    #            ncol=4, mode="expand", borderaxespad=0.)
     flag = 0
     for each in g_map.missile:
         center = each.center
@@ -147,7 +152,11 @@ def plt_trajectory(trajectory, ax):
     X = [trajectory.points[i][0] for i in range(l)]
     Y = [trajectory.points[i][1] for i in range(l)]
     Z = [trajectory.points[i][2] for i in range(l)]
-    ax.plot(X, Y, Z, trajectory.linestyle, alpha=1, linewidth=1, label=trajectory.label, zorder=20)
+    if len(trajectory.linestyle) < 3:
+        ax.plot(X, Y, Z, trajectory.linestyle, color='orange', alpha=1, linewidth=1, label=trajectory.label, zorder=20)
+    else:
+        ax.plot(X, Y, Z, trajectory.linestyle, alpha=1, linewidth=1, label=trajectory.label, zorder=20)
+
     #ax.plot(X, Y, Z, alpha=1, linewidth=1, label=label, color=color, linestyle=linestyle, marker=marker, zorder=20)
     inx = np.random.randint(0, l)
     #ax.text(X[inx], Y[inx], Z[inx], trajectory.describe, fontsize=15)
@@ -234,9 +243,21 @@ def plt_terrain(start_point, target_point, g_map, ax_3d):
         x_range.append(each)
     for each in range(int(begin_y/ 10) * 10 + 10, end_y, 10):
         y_range.append(each)
-    for each in range(0, int(z_max), 10):
+    for each in range(0, int(z_max), 2):
         z_range.append(each)
     ax_3d.set_xticks(x_range)
+
     ax_3d.set_yticks(y_range)
     ax_3d.set_zticks(z_range)
+    # fm = FontProperties(weight='normal', size=20, family='Times New Roman')
+    # ax_3d.set_xticklabels(x_range, fontproperties=fm)
+    # ax_3d.set_yticklabels(y_range, fontproperties=fm)
+    # ax_3d.set_zticklabels(z_range, fontproperties=fm)
+    ax_3d.w_xaxis.pane.set_color('w')
+    ax_3d.w_yaxis.pane.set_color('w')
+    ax_3d.w_zaxis.pane.set_color('w')
+    plt.rcParams.update({'font.family': 'Times New Roman'})
+    plt.rcParams.update({'font.weight': 'normal'})
+    # plt.rcParams.update({'font.size': 25})
+    plt.grid(color='g')
     # plt_missile(start_point, target_point, g_map, ax_3d)

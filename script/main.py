@@ -1,9 +1,68 @@
+import numpy as np
+
 from operatorlib.population import *
 from operatorlib.initialize import *
 from operatorlib.decoder import *
 import time
 from figplot import *
+import tf
+import matplotlib.pyplot as plt
 
+
+algorithms_lib = {
+    'GA':        '0100001001'
+                 '1001011101'
+                 '1100001101'
+                 '0111101110'
+                 '0111011011'
+                 '0100101000'
+                 '0010',
+    'CIPSO':     '0100011000'
+                 '0111101010'
+                 '1010011101'
+                 '1000000110'
+                 '0000000000'
+                 '0000000000'
+                 '0000',
+    'HHPSO':     '0100001001'
+                 '1001011101'
+                 '1100001101'
+                 '0111101110'
+                 '0111011011'
+                 '0100101000'
+                 '0010',
+    'JADE':      '0111011100'
+                 '0111111010'
+                 '0101111111'
+                 '0010100110'
+                 '1000000101'
+                 '0111101111'
+                 '0000',
+    'CIPDE':     '0001100111'
+                 '1101110111'
+                 '0110110000'
+                 '1101011110'
+                 '0001011010'
+                 '1010110010'
+                 '1011',
+
+    'mWPS':      '0000110101'
+                 '1110100111'
+                 '1010100000'
+                 '1011010110'
+                 '1100000000'
+                 '0101000010'
+                 '0010',
+    'HSGWO-SOS': '0011011011'
+                 '0110010000'
+                 '0001101111'
+                 '1100100110'
+                 '0100011010'
+                 '0110000100'
+                 '0001',
+
+
+}
 
 def fit(fitness_wight_factor, constraint, time_used, e_t, lambda_1, lambda_2):
     return fitness_wight_factor * lambda_1 + lambda_2 * time_used / e_t + np.sum(constraint > 0)
@@ -46,10 +105,13 @@ class SoftwareCluster:
             cnt += 1
         for each in variants:
             temp = Population(self.start, self.end, self.map, SoftInformation(each))
-            t0 = time.time()
-            temp.evolve(print_=0)
-            t = time.time() - t0
-            temp_fit = fit(temp.individuals[0].fitness_wight_factor, temp.individuals[0].constraint, t, self.e_t, 0.4, 0.6)
+            temp_fit = 0
+            for avr in range(3):
+                t0 = time.time()
+                temp.evolve(print_=0)
+                t = time.time() - t0
+                temp_fit += fit(temp.individuals[0].fitness_wight_factor, temp.individuals[0].constraint, t, self.e_t, 0.4, 0.6)
+            temp_fit /= 3
             genomes_tmp.append(each)
             fit_tmp.append(temp_fit)
         self.genomes = np.array(genomes_tmp)
@@ -72,14 +134,14 @@ class SoftwareCluster:
             off_spring = crossover(self.selection())
             variants = mutation(off_spring)
             self.update_generation(variants, data_pre)
-            trs = []
-            count = 1
-            for each in self.genomes:
-                p_ = test_population(self.start, self.end, self.map, soft_cluster.genomes[0])
-                trs.append(Trajectory(p_.individuals[0].trajectory, line_types[len(trs)], str(cnt) + '_' + str(count)))
-                count += 1
-            cnt += 1
-            plt_contour(start, goal, global_map, trs)
+            # trs = []
+            # count = 1
+            # for each in self.genomes:
+            #     p_ = test_population(self.start, self.end, self.map, each)
+            #     trs.append(Trajectory(p_.individuals[0].trajectory, line_types[len(trs)], str(cnt) + '_' + str(count)))
+            #     count += 1
+            # cnt += 1
+            # plt_contour(start, goal, global_map, trs)
         # x_ = np.linspace(0, cnt, 1)
         # y_ = np.array(tmp)
         # plt.figure()
@@ -134,7 +196,7 @@ def generate_new_genomes(genome, g_map, st, end):
 def test_population(start_, goal_, g_map, genome):
     p_ = Population(start_, goal_, g_map, SoftInformation(genome))
     # p = Population(start, goal, global_map, SoftInformation(genomes[0]))
-    p_.evolve(print_=1)
+    p_.evolve(print_=0)
     return p_
 
 
@@ -156,12 +218,17 @@ def load_data(file_name):
 
 
 if __name__ == "__main__":
-    global_map = test_map()
-    generate_map_in_constrain(global_map, 0, 0, 0)
+    # global_map = test_map()
+    # global_map = load_data('data/random_')
+    p_2 = load_data('data/random_1_evolved_population')
+    global_map = p_2.global_map
+
+    # global_map = load_data('data/lot_map1')
+    # generate_map_in_constrain(global_map, 20, 20, 20)
     genome_a = '0000011000' \
                '0000000000' \
                '0000000000' \
-               '0000000000' \
+               '0000000101' \
                '0000000000' \
                '0000000000' \
                '0000'
@@ -170,23 +237,69 @@ if __name__ == "__main__":
     # goal = np.array([50, 50, global_map.terrain.map(50, 50)])
     # p = Population(start, goal, global_map, SoftInformation(genome_b))
     # p.evolve(print_=1)
-    trajectories = []
+
     genomes = rd_genomes(10, genome_a)
+    # Performance
     start = np.array([10, 10, global_map.terrain.map(10, 10)])
     goal = np.array([100, 70, global_map.terrain.map(100, 70)])
-    p_1 = test_population(start, goal, global_map, genome_a)
-    new_trajectory(trajectories, p_1.individuals[0].trajectory, "origin")
+    p_2 = Population(start, goal, global_map, p_2.soft_inf)
+    p_1 = []
+    for each in algorithms_lib:
+        p_1.append([Population(start, goal, global_map, SoftInformation(algorithms_lib[each])), each])
+        p_1[-1][0].evolve()
+    p_2.evolve()
+    trajectories = []
+    fig, axs = plt.subplots(2, 1)
+    for each in p_1:
+        new_trajectory(trajectories, each[0].individuals[0].trajectory, each[1])
+        t = np.arange(0, each[0].gen_max, 1)
+        axs[0].plot(t, each[0].fitness_history, trajectories[-1].linestyle, label=each[1])
+        axs[1].plot(t, each[0].constraint_history, trajectories[-1].linestyle, label=each[1])
+        # ax.plot(t, s)
+    new_trajectory(trajectories, p_2.individuals[0].trajectory, 'evolved')
+    trajectories[-1].linestyle = trajectories[-1].linestyle[0:-1]
+    t = np.arange(0, p_2.gen_max, 1)
+    axs[0].plot(t, p_2.fitness_history, trajectories[-1].linestyle, color='orange', label='evolved')
+    axs[1].plot(t, p_2.constraint_history, trajectories[-1].linestyle,  color='orange', label='evolved')
+    axs[0].set_ylabel('fitness')
+    axs[1].set_ylabel('constraint')
+    axs[1].set_xlabel('generation')
+    axs[1].set_ylim(ymin=0)
+    # axs[1].set_xlim(xmin=0)
+    axs[0].set_ylim(ymin=0)
+    # axs[0].set_xlim(xmin=0)
+    axs[0].legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+                  ncol=4, mode="expand", borderaxespad=0.)
+    plt.show()
 
-    soft_cluster = SoftwareCluster(genomes, start, goal, global_map, e_t=3, time_limit=60)
-    soft_cluster.evolve(print_=1)
+    plt_contour(start, goal, global_map, trajectories)
+
+    # ax.set(xlabel='time (s)', ylabel='voltage (mV)',
+    #        title='About as simple as it gets, folks')
+    # ax.grid()
+
+    # adaptive verification
+    soft_cluster = SoftwareCluster(genomes, start, goal, global_map, e_t=3, time_limit=40000)
+    soft_cluster.evolve(print_=0)
+    # p_1 = test_population(start, goal, global_map, genome_a)
     # p_2 = test_population(start, goal, global_map, soft_cluster.genomes[0])
+    # trajectories = []
+    # new_trajectory(trajectories, p_1.individuals[0].trajectory, "origin")
     # new_trajectory(trajectories, p_2.individuals[0].trajectory, 'evolved')
+    # plt_contour(start, goal, global_map, trajectories)
     # PLOT
+    # trajectories = []
     figure = plt.figure()
     ax_ = Axes3D(figure)
     plt_terrain(start, goal, global_map, ax_)
     plt_3d_trajectories(ax_, trajectories)
-    plt_contour(start, goal, global_map, trajectories)
-
+    # ax = plt.gca()
+    # ax.spines['bottom'].set_linewidth(5)
+    # ax.spines['left'].set_linewidth(2)
+    # ax.spines['right'].set_linewidth(2)
+    plt.rcParams.update({'font.family': 'Times New Roman'})
+    plt.rcParams.update({'font.weight': 'normal'})
+    # plt.rcParams.update({'font.size': 70})
+    # plt.legend(loc='best')
     # fig = plt.figure()
     # plt.plot([p.individuals[i].fitness_wight_factor for i in range(len(p.data))])

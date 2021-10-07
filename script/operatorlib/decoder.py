@@ -2,6 +2,7 @@
 
 class SoftInformation:
     def __init__(self, genomes):
+        self.genomes = genomes
         self.num_cp = decode_cp(genomes[0:2])
         self.num_pop = decode_n_p(genomes[2:4])
         self.num_individual = decode_n_i(genomes[4:7])
@@ -247,7 +248,7 @@ def decode_explore(_explore, _explore_param):
     dict_explore = {'000': "num",
                     '001': "um",
                     '010': "gm",
-                    '011': "cm",
+                    '011': "cm_",
                     '100': "pus",
                     '101': "sgwo",
                     '110': "cinf",

@@ -134,8 +134,8 @@ def fitness(trajectory, trajectory_r, population):
     Determine the fitness of an individual. Lower is better.
     """
     len_trajectory = len(trajectory)
-    trajectory_ = trajectory[len_trajectory // 10: len_trajectory // 10 * 9]
-    trajectory_r_ = trajectory_r[len_trajectory // 10: len_trajectory // 10 * 9]
+    trajectory_ = trajectory[1: len_trajectory-1]
+    trajectory_r_ = trajectory_r[1: len_trajectory-1]
     len_trajectory = len(trajectory_)
     dist_optimal = population.distance
     h_safe = 0.5

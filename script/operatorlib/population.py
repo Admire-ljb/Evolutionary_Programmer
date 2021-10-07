@@ -3,6 +3,7 @@ from sort_selection import *
 from exploitation_exploration import *
 from decoder import SoftInformation
 import time
+from figplot import *
 
 
 class Population:
@@ -35,6 +36,8 @@ class Population:
         self.exploitation_params = None
         self.select_number = self.get_select_number(self.soft_inf.exploit)
         self.elitism = self.soft_inf.elitism
+        self.fitness_history = []
+        self.constraint_history = []
         # self.cuu = np.zeros(self.num_individual)
         # self.fit_wight_pre = None
         # self.sort_basis = None
@@ -59,6 +62,8 @@ class Population:
         self.individuals = individuals
         self.update_index(self.sort(self.individuals))
         self.individuals = self.individuals[0:self.num_individual]
+        self.fitness_history.append(self.individuals[0].fitness_wight_factor)
+        self.constraint_history.append(np.sum(self.individuals[0].constraint))
         self.data = np.array([self.individuals[i].control_points_r for i in range(self.num_individual)])
 
     def sort(self, sort_data):
@@ -82,12 +87,20 @@ class Population:
             return
 
     def evolve(self, print_=0):
+        cnt = 1
         for i in range(self.gen_max):
             self.update_index(self.sort(self.individuals))
             if print_ == 1:
                 print("===============", self.generation, "th evolve===============")
                 print("fit:", self.individuals[0].fitness_wight_factor)
                 print("con:", self.individuals[0].constraint)
+                trs = []
+                count = 1
+                for each in self.individuals:
+                    trs.append(Trajectory(each.trajectory, line_types[len(trs)], str(cnt) + '_' + str(count)))
+                    count += 1
+                plt_contour(self.start, self.goal, self.global_map, trs)
+                cnt += 1
             off_spring = self.exploitation(self.selection(self.individuals, self.select_number))
             variants = self.exploration(off_spring)
             self.update_generation(variants)
@@ -126,7 +139,7 @@ def test_fitness(population):
 
 
 if __name__ == '__main__':
-    global_map = test_map(0, 0, 0)
+    global_map = test_map()
     p = test_population(global_map)
     p.evolve(print_=1)
     # inx = p.sort(p.individuals)
