@@ -64,8 +64,26 @@ algorithms_lib = {
 
 }
 
+
 def fit(fitness_wight_factor, constraint, time_used, e_t, lambda_1, lambda_2):
     return fitness_wight_factor * lambda_1 + lambda_2 * time_used / e_t + np.sum(constraint > 0)
+
+
+def compare_average(planner):
+    fit_sum = 0
+    time_sum = 0
+    suc_time = 0
+    times = 100
+    for i in range(times):
+        temp = Population(planner.start, planner.goal, planner.global_map, planner.soft_inf)
+        a = time.time()
+        temp.evolve()
+        time_sum += time.time() - a
+        fit_sum += temp.individuals[0].fitness_wight_factor
+        if np.sum(temp.individuals[0].constraint) < 2:
+            suc_time += 1
+
+    return suc_time/ times, fit_sum / times, time_sum / times
 
 
 class SoftwareCluster:
@@ -216,8 +234,7 @@ def load_data(file_name):
     pkl_file.close()
     return data_name
 
-
-if __name__ == "__main__":
+def random_test():
     # global_map = test_map()
     # global_map = load_data('data/random_')
     p_2 = load_data('data/random_1_evolved_population')
@@ -225,13 +242,20 @@ if __name__ == "__main__":
 
     # global_map = load_data('data/lot_map1')
     # generate_map_in_constrain(global_map, 20, 20, 20)
-    genome_a = '0000011000' \
-               '0000000000' \
-               '0000000000' \
-               '0000000101' \
-               '0000000000' \
-               '0000000000' \
-               '0000'
+    # genome_a = '0000011000' \
+    #            '0000000000' \
+    #            '0000000000' \
+    #            '0000000101' \
+    #            '0000000000' \
+    #            '0000000000' \
+    #            '0000'
+    genome_a = '0100001001' \
+               '1001011101'\
+               '1100001101'\
+               '0111101110'\
+               '0111011011'\
+               '0100101000'\
+               '0010'
     # genome_b = '0011010011001001010111110101111101010011101010101101011010001010'
     # start = np.array([0, 0, global_map.terrain.map(0, 0)])
     # goal = np.array([50, 50, global_map.terrain.map(50, 50)])
@@ -266,10 +290,10 @@ if __name__ == "__main__":
     axs[1].set_xlabel('generation')
     axs[1].set_ylim(ymin=0)
     # axs[1].set_xlim(xmin=0)
-    axs[0].set_ylim(ymin=0)
+    # axs[0].set_ylim(ymin=0)
     # axs[0].set_xlim(xmin=0)
-    axs[0].legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
-                  ncol=4, mode="expand", borderaxespad=0.)
+    # axs[0].legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+    #               ncol=4, mode="expand", borderaxespad=0.)
     plt.show()
 
     plt_contour(start, goal, global_map, trajectories)
@@ -303,3 +327,54 @@ if __name__ == "__main__":
     # plt.legend(loc='best')
     # fig = plt.figure()
     # plt.plot([p.individuals[i].fitness_wight_factor for i in range(len(p.data))])
+
+
+if __name__ == "__main__":
+    p_2 = load_data('data/hug_1_origin_population')
+    p_1 = load_data('data/hug_1_evolved_population')
+    global_map = p_2.global_map
+    # start = np.array([40, 10, global_map.terrain.map(40, 10)])
+    # goal = np.array([60, 70, global_map.terrain.map(60, 70)])
+    # start = np.array([110, 10, global_map.terrain.map(110, 10)])
+    # goal = np.array([10, 70, global_map.terrain.map(10, 70)])
+    start = np.array([10, 35, global_map.terrain.map(10, 35)])
+    goal = np.array([100, 35, global_map.terrain.map(100, 35)])
+    p_2 = Population(start, goal, global_map, p_2.soft_inf)
+    p_1 = Population(start, goal, global_map, p_1.soft_inf)
+    p_2.evolve()
+    p_1.evolve()
+    trajectories = []
+    new_trajectory(trajectories, p_1.individuals[0].trajectory, "origin_")
+    new_trajectory(trajectories, p_2.individuals[0].trajectory, 'evolved_')
+    plt_contour(np.array([10, 10, 0]), np.array([110, 90, 0]), global_map, trajectories)
+    trajectories = []
+    #
+    for i in range(1, 5):
+        p_1 = load_data('data/points4_'+str(i)+'_p_1')
+        p_2 = load_data('data/points4_'+str(i)+'_p_2')
+        new_trajectory(trajectories, p_1.individuals[0].trajectory, "origin_"+str(i))
+        new_trajectory(trajectories, p_2.individuals[0].trajectory, 'evolved_'+str(i))
+        trajectories[-1].linestyle = trajectories[-1].linestyle[0:2] + 'r'
+        trajectories[-2].linestyle = trajectories[-2].linestyle[0:2] + 'b'
+    plt_contour(np.array([10, 10, 0]), np.array([110, 90, 0]), global_map, trajectories)
+    # for i in range(1, 5):
+    #     p_1 = load_data('data/points_'+str(i)+'_p_1')
+    #     p_2 = load_data('data/points_'+str(i)+'_p_2')
+    #     temp = []
+    #     new_trajectory(temp, p_1.individuals[0].trajectory, "origin_"+str(i))
+    #     new_trajectory(temp, p_2.individuals[0].trajectory, 'evolved_'+str(i))
+    #     temp[0].linestyle = sq[i-1] + temp[0].linestyle[1:3]
+    #     temp[1].linestyle = sq[i-1] + temp[1].linestyle[1:3]
+    #     trajectories.append(temp[0])
+    #     trajectories.append(temp[1])
+    # plt_contour(np.array([10, 10, 0]), np.array([100, 70, 0]), global_map, trajectories)
+    # figure = plt.figure()
+    # ax_ = Axes3D(figure)
+    # plt_terrain(np.array([10, 10, 0]), np.array([100, 70, 0]), global_map, ax_)
+    # plt_3d_trajectories(ax_, trajectories)
+    # ax = plt.gca()
+    # ax.spines['bottom'].set_linewidth(5)
+    # ax.spines['left'].set_linewidth(2)
+    # ax.spines['right'].set_linewidth(2)
+    plt.rcParams.update({'font.family': 'Times New Roman'})
+    plt.rcParams.update({'font.weight': 'normal'})

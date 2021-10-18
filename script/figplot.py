@@ -9,7 +9,7 @@ from mpl_toolkits.mplot3d import axes3d
 from matplotlib.font_manager import FontProperties
 plt.rcParams["font.family"] = "Times New Roman"
 
-line_types = ['-ob', '-^r', '-Pc', '-xk', '-sm', '-dy', '-<g', '->r', '-*r', '-Xr', '-hr', '-2r', '-+r', '-vr',
+line_types = ['-ob', '-^r', '-Pc', '-xk', '-sm', '-dy', '-<g', '-Xr', '-*r', '->r', '-hr', '-2r', '-+r', '-vr',
               '-4r', '-1r', '-3r', '-5r', '-6r', '-7r', '-9r', '-_r']
 
 
