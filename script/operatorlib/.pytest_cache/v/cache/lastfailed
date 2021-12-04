@@ -1,5 +1,0 @@
-{
-  "initialize.py::test_fitness": true,
-  "initialize.py::test_map": true,
-  "initialize.py::test_population": true
-}
