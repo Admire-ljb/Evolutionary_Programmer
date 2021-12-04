@@ -1,0 +1,41 @@
+# cmake_minimum_required(VERSION 2.8.3)
+# project(Evoluationary_Programmer)
+
+# ## Find catkin macros and libraries
+# ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
+# ## is used, also find other catkin packages
+# set(PCL_DIR /usr/local/share/pcl-1.8)
+
+
+# # find_package(Python2 COMPONENTS Development NumPy)
+# # target_include_directories(myproject PRIVATE ${Python2_INCLUDE_DIRS} ${Python2_NumPy_INCLUDE_DIRS})
+# # target_link_libraries(myproject Python2::Python Python2::NumPy)
+
+# find_package(
+#   # PythonLibs 2.7
+#   PCL 1.8 REQUIRED
+# )
+
+
+add_executable(control_node src/control_node.cpp)
+target_link_libraries(square ${catkin_LIBRARIES})
+
+# find_package(PythonLibs 2.7)
+# include_directories(
+#   ${catkin_INCLUDE_DIRS}
+#   ${PCL_INCLUDE_DIRS}
+#   include
+#   "/home/ljb/pkg_slam_about/matplotlib-cpp/"
+#   "/usr/include/python2.7"
+# )
+
+# link_directories(${PCL_LIBRARY_DIRS})
+
+# add_definitions(${PCL_DEFINITIONS})
+
+# add_executable(genMap src/genMap.cpp)
+
+# target_link_libraries(genMap ${PCL_LIBRARIES})
+# # target_include_directories(genMap PRIVATE ${PYTHON_INCLUDE_DIRS})
+# target_include_directories(genMap PRIVATE ${WORKING_DIRECTORY})
+
